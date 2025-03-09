@@ -1,8 +1,8 @@
 import { SubscribeMailchimpDto } from './dto/subscribe-mailchimp.dto';
 import { ConfigService } from '@nestjs/config';
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
-import Mailchimp from 'mailchimp-api-v3';
 import { MailchimpConfig } from '../../core/config/mailchimp.config';
+import Mailchimp from 'mailchimp-api-v3';
 
 interface MailchimpBody {
   tags?: string[];
@@ -17,9 +17,15 @@ interface MailchimpBody {
 
 @Injectable()
 export class MailchimpService {
+  private config: MailchimpConfig;
+  private mailchimp: Mailchimp;
+
   constructor(private configService: ConfigService) {}
 
-  async subscribe(createMailchimpDto: SubscribeMailchimpDto) {
+  getConfig(): MailchimpConfig {
+    if (this.config) {
+      return this.config;
+    }
     const config = this.configService.get<MailchimpConfig>('mailchimp');
     if (!config?.enabled) {
       console.error('Mailchimp: Service is disabled.');
@@ -29,8 +35,24 @@ export class MailchimpService {
       console.error('Mailchimp: Token is not defined.');
       throw new HttpException('Service is disabled', HttpStatus.BAD_REQUEST);
     }
-    const mailchimp = new Mailchimp(config.token);
-    const fetchResponse = await mailchimp.request({
+    this.config = config;
+    return this.config;
+  }
+
+  getMailchimp(): Mailchimp {
+    if (this.mailchimp) {
+      return this.mailchimp;
+    }
+
+    const mailchimpRef = require('mailchimp-api-v3');
+
+    this.mailchimp = new mailchimpRef(this.getConfig().token) as Mailchimp;
+
+    return this.mailchimp;
+  }
+
+  async subscribe(createMailchimpDto: SubscribeMailchimpDto) {
+    const fetchResponse = await this.getMailchimp().request({
       method: 'get',
       path: '/lists',
     });
@@ -47,7 +69,7 @@ export class MailchimpService {
     }
 
     let activeList = lists.find(
-      (list: any) => list.stats.member_count < config.limit,
+      (list: any) => list.stats.member_count < this.getConfig().limit,
     );
     if (!activeList) {
       console.warn('Mailchimp: Every mailing list is full.');
@@ -74,7 +96,7 @@ export class MailchimpService {
     }
 
     try {
-      await mailchimp.request({
+      await this.getMailchimp().request({
         method: 'post',
         path: `/lists/${activeList.id}/members`,
         body,
@@ -87,7 +109,8 @@ export class MailchimpService {
       );
       console.log(e);
       if (e.statusCode === 400 && e.title === 'Member Exists') {
-        throw new HttpException('Already subscribed.', HttpStatus.BAD_REQUEST);
+        // silently ignore when member already exists
+        return;
       }
       throw new HttpException('Something is wrong.', HttpStatus.BAD_REQUEST);
     }
