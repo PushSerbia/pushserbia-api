@@ -14,6 +14,11 @@ async function bootstrap() {
       skipMissingProperties: true,
     }),
   );
+  app.enableCors({
+    origin: ['http://localhost:4200', 'https://pushserbia.com'],
+    credentials: true,
+    preflightContinue: false,
+  });
 
   await app.listen(process.env.PORT ?? 3000);
 }
