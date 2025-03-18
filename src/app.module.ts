@@ -25,7 +25,7 @@ import { UsersModule } from './modules/users/users.module';
         database: configService.get<string>('DATABASE_NAME'),
         // entities: [User, Project...],
         autoLoadEntities: true,
-        synchronize: false, 
+        synchronize: true, 
       }),
       inject: [ConfigService],
     }),
