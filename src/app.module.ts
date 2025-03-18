@@ -6,6 +6,8 @@ import mailchimpConfig from './core/config/mailchimp.config';
 import { MailchimpModule } from './integrations/mailchimp/mailchimp.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { UsersModule } from './modules/users/users.module';
+import { ProjectsModule } from './modules/projects/projects.module';
+import { VotesModule } from './modules/votes/votes.module';
 
 @Module({
   imports: [
@@ -13,7 +15,6 @@ import { UsersModule } from './modules/users/users.module';
       isGlobal: true,
       load: [mailchimpConfig],
     }),
-    MailchimpModule,
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
       useFactory: (configService: ConfigService) => ({
@@ -29,7 +30,10 @@ import { UsersModule } from './modules/users/users.module';
       }),
       inject: [ConfigService],
     }),
+    MailchimpModule,
     UsersModule,
+    ProjectsModule,
+    VotesModule
   ],
   controllers: [AppController],
   providers: [AppService],

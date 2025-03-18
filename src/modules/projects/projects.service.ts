@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, ConflictException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Project } from './entities/project.entity';
@@ -20,19 +20,24 @@ export class ProjectsService {
       ...createProjectDto,
       creator,
       status: ProjectStatus.PENDING,
-      shareableLink: uuidv4(), // Generiše jedinstveni šerabilni link
+      shareableLink: uuidv4(), // random za sada
     });
-    return this.projectRepository.save(project);
+    try {
+      return await this.projectRepository.save(project);
+    } catch (error) {
+      throw new ConflictException('Error creating project: ' + error.message);
+    }
   }
 
   async findAll(): Promise<Project[]> {
     return this.projectRepository.find({
+      where: { isBanned: false },
       relations: ['creator'],
     });
   }
 
   async findOne(id: number): Promise<Project> {
-    const project = await this.projectRepository.findOne({ 
+    const project = await this.projectRepository.findOne({
       where: { id },
       relations: ['creator'],
     });
@@ -44,15 +49,26 @@ export class ProjectsService {
 
   async update(id: number, updateProjectDto: UpdateProjectDto): Promise<Project> {
     const project = await this.findOne(id);
+   
+    if (project.isBanned) {
+      throw new ConflictException('Cannot update a banned project');
+    }
     Object.assign(project, updateProjectDto);
-    return this.projectRepository.save(project);
+    try {
+      return await this.projectRepository.save(project);
+    } catch (error) {
+      throw new ConflictException('Error updating project: ' + error.message);
+    }
   }
 
   async banProject(id: number, banNote: string): Promise<Project> {
     const project = await this.findOne(id);
+    if (project.isBanned) {
+      throw new ConflictException('Project is already banned');
+    }
     project.isBanned = true;
     project.banNote = banNote;
-    return this.projectRepository.save(project);
+    return await this.projectRepository.save(project);
   }
 
   async remove(id: number): Promise<void> {
