@@ -25,7 +25,12 @@ export class FirebaseAuthService {
       return this.admin;
     }
     const config = this.configService.get<ServiceAccount>('firebase');
-    this.admin = firebaseAdmin.initializeApp(config);
+    if (!config) {
+      throw new UnauthorizedException('Firebase config is not provided');
+    }
+    this.admin = firebaseAdmin.initializeApp({
+      credential: firebaseAdmin.credential.cert(config),
+    });
     return this.admin;
   }
 
