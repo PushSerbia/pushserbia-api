@@ -21,7 +21,7 @@ async function bootstrap() {
     preflightContinue: false,
   });
   app.useGlobalFilters(new ExceptionsFilter());
-  
+
   await app.listen(process.env.PORT ?? 3000);
 }
 bootstrap();
