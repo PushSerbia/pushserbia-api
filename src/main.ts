@@ -16,7 +16,11 @@ async function bootstrap() {
     }),
   );
   app.enableCors({
-    origin: ['http://localhost:4200', 'https://pushserbia.com'],
+    origin: [
+      'http://localhost:4200',
+      'https://pushserbia.com',
+      'https://staging.pushserbia.com',
+    ],
     credentials: true,
     preflightContinue: false,
   });
