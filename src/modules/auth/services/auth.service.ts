@@ -30,6 +30,13 @@ export class AuthService {
     status: number;
     url: string;
   }> {
+    if (!callback) {
+      return {
+        status: HttpStatus.FOUND,
+        url: this.getConfig().productionLoginPage,
+      };
+    }
+
     const token = await this.linkedinAuthService.getToken(code, callback);
     if (!token) {
       return {
