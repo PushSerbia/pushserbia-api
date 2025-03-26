@@ -1,14 +1,24 @@
-import { Controller, Get, Post, Patch, Delete, Body, Param, ParseIntPipe, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  ParseIntPipe,
+  Patch,
+  Post,
+  UseGuards,
+} from '@nestjs/common';
 import { ProjectsService } from './projects.service';
 import { CreateProjectDto } from './dto/create-project.dto';
 import { UpdateProjectDto } from './dto/update-project.dto';
 import { User } from '../users/entities/user.entity';
-import { GetUser } from 'src/core/decorators/get-user.decorator';
-import { AuthGuard } from 'src/core/guards/auth/auth.guard';
+import { GetUser } from '../../core/decorators/get-user.decorator';
+import { AuthGuard } from '../../core/guards/auth/auth.guard';
 
 @Controller('projects')
 export class ProjectsController {
-  constructor(private readonly projectsService: ProjectsService) { }
+  constructor(private readonly projectsService: ProjectsService) {}
 
   @UseGuards(AuthGuard)
   @Post()

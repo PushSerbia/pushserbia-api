@@ -1,7 +1,14 @@
-import { Controller, Post, Get, Param, ParseIntPipe, UseGuards } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Param,
+  ParseIntPipe,
+  Post,
+  UseGuards,
+} from '@nestjs/common';
 import { VotesService } from './votes.service';
-import { GetUser } from 'src/core/decorators/get-user.decorator';
-import { AuthGuard } from 'src/core/guards/auth/auth.guard';
+import { GetUser } from '../../core/decorators/get-user.decorator';
+import { AuthGuard } from '../../core/guards/auth/auth.guard';
 import { User } from '../users/entities/user.entity';
 
 @Controller('votes')
@@ -18,7 +25,9 @@ export class VotesController {
   }
 
   @Get(':projectId/count')
-  async getProjectVoteCount(@Param('projectId', ParseIntPipe) projectId: number) {
+  async getProjectVoteCount(
+    @Param('projectId', ParseIntPipe) projectId: number,
+  ) {
     const voteCount = await this.votesService.getProjectVoteCount(projectId);
     return { projectId, voteCount };
   }
