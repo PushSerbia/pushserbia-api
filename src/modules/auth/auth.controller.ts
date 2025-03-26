@@ -14,17 +14,27 @@ export class AuthController {
   ) {}
 
   @Get('redirect/linkedin')
-  async linkedinRedirect(@Query('code') code: string, @Res() res: Response) {
+  async linkedinRedirect(
+    @Query('code') code: string,
+    @Query('callback') callback: string,
+    @Res() res: Response,
+  ) {
     const authConfig = this.configService.get<AuthConfig>('auth')!;
 
-    const token = await this.linkedinAuthService.getToken(code);
+    const token = await this.linkedinAuthService.getToken(code, callback);
     if (!token) {
-      return res.redirect(HttpStatus.FOUND, authConfig.loginPage);
+      return res.redirect(
+        HttpStatus.FOUND,
+        `${callback}/${authConfig.loginPage}`,
+      );
     }
 
     const user = await this.linkedinAuthService.getUser(token.access_token);
     if (!user) {
-      return res.redirect(HttpStatus.FOUND, authConfig.loginPage);
+      return res.redirect(
+        HttpStatus.FOUND,
+        `${callback}/${authConfig.loginPage}`,
+      );
     }
 
     const firebaseToken =
@@ -32,7 +42,7 @@ export class AuthController {
 
     return res.redirect(
       HttpStatus.FOUND,
-      `${authConfig.accountPage}?customToken=${firebaseToken}`,
+      `${callback}/${authConfig.accountPage}?customToken=${firebaseToken}`,
     );
   }
 }

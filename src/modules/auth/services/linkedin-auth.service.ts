@@ -23,18 +23,23 @@ export class LinkedinAuthService {
     return this.config;
   }
 
-  getTokenParams(code: string): URLSearchParams {
+  getTokenParams(code: string, callback: string): URLSearchParams {
+    const config = this.getConfig();
     const params: LinkedinAccessTokenParams = {
-      ...this.getConfig(),
+      ...config,
+      redirect_uri: `${config.redirect_uri}${callback}`,
       grant_type: 'authorization_code',
       code: code,
     };
     return new URLSearchParams(params);
   }
 
-  async getToken(code: string): Promise<LinkedinAccessTokenResponse> {
+  async getToken(
+    code: string,
+    callback: string,
+  ): Promise<LinkedinAccessTokenResponse> {
     try {
-      const params = this.getTokenParams(code).toString();
+      const params = this.getTokenParams(code, callback).toString();
       const req = await fetch(
         `https://www.linkedin.com/oauth/v2/accessToken?${params}`,
         {
@@ -67,7 +72,7 @@ export class LinkedinAuthService {
       }
 
       throw new UnauthorizedException('Something went wrong');
-    } catch {
+    } catch (error) {
       throw new UnauthorizedException('Something went wrong');
     }
   }
