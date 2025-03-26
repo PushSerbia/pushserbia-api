@@ -1,17 +1,10 @@
-import { Controller, Get, HttpStatus, Query, Res } from '@nestjs/common';
-import { FirebaseAuthService } from './services/firebase-auth.service';
-import { LinkedinAuthService } from './services/linkedin-auth.service';
+import { Controller, Get, Query, Res } from '@nestjs/common';
 import { Response } from 'express';
-import { ConfigService } from '@nestjs/config';
-import { AuthConfig } from '../../core/config/auth.config';
+import { AuthService } from './services/auth.service';
 
 @Controller('auth')
 export class AuthController {
-  constructor(
-    private firebaseAuthService: FirebaseAuthService,
-    private linkedinAuthService: LinkedinAuthService,
-    private configService: ConfigService,
-  ) {}
+  constructor(private authService: AuthService) {}
 
   @Get('redirect/linkedin')
   async linkedinRedirect(
@@ -19,30 +12,8 @@ export class AuthController {
     @Query('callback') callback: string,
     @Res() res: Response,
   ) {
-    const authConfig = this.configService.get<AuthConfig>('auth')!;
+    const response = await this.authService.redirectionHandler(code, callback);
 
-    const token = await this.linkedinAuthService.getToken(code, callback);
-    if (!token) {
-      return res.redirect(
-        HttpStatus.FOUND,
-        `${callback}/${authConfig.loginPage}`,
-      );
-    }
-
-    const user = await this.linkedinAuthService.getUser(token.access_token);
-    if (!user) {
-      return res.redirect(
-        HttpStatus.FOUND,
-        `${callback}/${authConfig.loginPage}`,
-      );
-    }
-
-    const firebaseToken =
-      await this.firebaseAuthService.authenticateWithLinkedin(user);
-
-    return res.redirect(
-      HttpStatus.FOUND,
-      `${callback}/${authConfig.accountPage}?customToken=${firebaseToken}`,
-    );
+    return res.redirect(response.status, response.url);
   }
 }
