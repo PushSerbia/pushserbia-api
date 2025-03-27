@@ -44,18 +44,22 @@ import authConfig from './core/config/auth.config';
 })
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
+    const customRoutes = [
+      { path: '/users/me', method: RequestMethod.GET },
+      { path: '/users/account', method: RequestMethod.GET },
+    ];
+
     consumer
       .apply(AuthMiddleware)
       .exclude(
         { path: '', method: RequestMethod.ALL },
         { path: '/integrations/subscribe', method: RequestMethod.POST },
         { path: '/auth/redirect/linkedin', method: RequestMethod.GET },
-        { path: '/users/me', method: RequestMethod.GET }, // custom middleware is added below instead
-        { path: '/users/account', method: RequestMethod.GET }, // custom middleware is added below instead
+        { path: '/projects', method: RequestMethod.GET },
+        ...customRoutes,
       )
       .forRoutes('*');
 
-    consumer.apply(ValidTokenOnlyMiddleware).forRoutes('/users/me');
-    consumer.apply(ValidTokenOnlyMiddleware).forRoutes('/users/account');
+    consumer.apply(ValidTokenOnlyMiddleware).forRoutes(...customRoutes);
   }
 }
