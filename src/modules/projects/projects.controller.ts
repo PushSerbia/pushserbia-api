@@ -8,20 +8,17 @@ import {
   Patch,
   Post,
   Query,
-  UseGuards,
 } from '@nestjs/common';
 import { ProjectsService } from './projects.service';
 import { CreateProjectDto } from './dto/create-project.dto';
 import { UpdateProjectDto } from './dto/update-project.dto';
 import { User } from '../users/entities/user.entity';
 import { GetUser } from '../../core/decorators/get-user.decorator';
-import { AuthGuard } from '../../core/guards/auth/auth.guard';
 
 @Controller('projects')
 export class ProjectsController {
   constructor(private readonly projectsService: ProjectsService) {}
 
-  @UseGuards(AuthGuard)
   @Post()
   async create(
     @Body() createProjectDto: CreateProjectDto,
@@ -40,7 +37,6 @@ export class ProjectsController {
     return await this.projectsService.findOne(id);
   }
 
-  @UseGuards(AuthGuard)
   @Patch(':id')
   async update(
     @Param('id', ParseIntPipe) id: number,
@@ -49,7 +45,6 @@ export class ProjectsController {
     return await this.projectsService.update(id, updateProjectDto);
   }
 
-  @UseGuards(AuthGuard)
   @Patch(':id/ban')
   async banProject(
     @Param('id', ParseIntPipe) id: number,
@@ -58,7 +53,6 @@ export class ProjectsController {
     return await this.projectsService.banProject(id, banNote);
   }
 
-  @UseGuards(AuthGuard)
   @Delete(':id')
   async remove(@Param('id', ParseIntPipe) id: number) {
     return await this.projectsService.remove(id);
