@@ -12,7 +12,7 @@ export class CreateProjectDto {
   @IsDefined()
   @IsString()
   @IsNotEmpty()
-  title: string;
+  name: string;
 
   @IsDefined()
   @IsString()
@@ -22,11 +22,16 @@ export class CreateProjectDto {
   @IsDefined()
   @IsString()
   @IsNotEmpty()
+  shortDescription: string;
+
+  @IsDefined()
+  @IsString()
+  @IsNotEmpty()
   description: string;
 
   @IsOptional()
   @IsUrl()
-  githubLink?: string;
+  github?: string;
 
   @IsOptional()
   @IsEnum(ProjectStatus)
