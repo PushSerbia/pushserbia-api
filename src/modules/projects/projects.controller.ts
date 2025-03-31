@@ -7,6 +7,7 @@ import {
   ParseIntPipe,
   Patch,
   Post,
+  Query,
   UseGuards,
 } from '@nestjs/common';
 import { ProjectsService } from './projects.service';
@@ -30,8 +31,8 @@ export class ProjectsController {
   }
 
   @Get()
-  async findAll() {
-    return await this.projectsService.findAll();
+  findAll(@Query('slug') slug: string) {
+    return this.projectsService.findAll(slug ? { slug } : undefined);
   }
 
   @Get(':id')

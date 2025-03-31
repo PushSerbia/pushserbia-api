@@ -16,7 +16,13 @@ export class Project {
   id: string;
 
   @Column()
-  title: string;
+  name: string;
+
+  @Column({ unique: true })
+  slug: string;
+
+  @Column()
+  shortDescription: string;
 
   @Column({ type: 'text' })
   description: string;
@@ -28,11 +34,11 @@ export class Project {
   })
   status: ProjectStatus;
 
-  @Column({ nullable: true })
-  githubLink: string;
+  @Column({ type: 'int', default: 0 })
+  voteCounter: number;
 
-  @Column({ unique: true, nullable: true })
-  shareableLink: string;
+  @Column({ nullable: true })
+  github: string;
 
   @Column({ default: false })
   isBanned: boolean;
