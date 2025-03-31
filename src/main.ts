@@ -21,7 +21,6 @@ async function bootstrap() {
       'https://pushserbia.com',
       'https://staging.pushserbia.com',
     ],
-    credentials: true,
     preflightContinue: false,
   });
   app.useGlobalFilters(new ExceptionsFilter());
