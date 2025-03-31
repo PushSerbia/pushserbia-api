@@ -1,16 +1,37 @@
-import { IsString, IsOptional, IsEnum, IsUrl } from 'class-validator';
+import {
+  IsDefined,
+  IsEnum,
+  IsNotEmpty,
+  IsOptional,
+  IsString,
+  IsUrl,
+} from 'class-validator';
 import { ProjectStatus } from '../enums/project-status.enum';
 
 export class CreateProjectDto {
+  @IsDefined()
   @IsString()
-  title: string;
+  @IsNotEmpty()
+  name: string;
 
+  @IsDefined()
   @IsString()
+  @IsNotEmpty()
+  slug: string;
+
+  @IsDefined()
+  @IsString()
+  @IsNotEmpty()
+  shortDescription: string;
+
+  @IsDefined()
+  @IsString()
+  @IsNotEmpty()
   description: string;
 
   @IsOptional()
   @IsUrl()
-  githubLink?: string;
+  github?: string;
 
   @IsOptional()
   @IsEnum(ProjectStatus)
