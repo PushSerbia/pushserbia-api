@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException, ConflictException } from '@nestjs/common';
+import {
+  ConflictException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { CreateProjectDto } from './dto/create-project.dto';
 import { UpdateProjectDto } from './dto/update-project.dto';
 import { Project } from './entities/project.entity';
@@ -13,7 +17,10 @@ export class ProjectsService {
     private readonly projectRepositoryService: ProjectRepositoryService,
   ) {}
 
-  async create(createProjectDto: CreateProjectDto, creator: User): Promise<Project> {
+  async create(
+    createProjectDto: CreateProjectDto,
+    creator: User,
+  ): Promise<Project> {
     const newProjectData = {
       ...createProjectDto,
       creator,
@@ -27,9 +34,9 @@ export class ProjectsService {
     }
   }
 
-  async findAll(): Promise<Project[]> {
+  async findAll(options?: Partial<Project>): Promise<Project[]> {
     return this.projectRepositoryService.findAll({
-      where: { isBanned: false },
+      where: { ...options, isBanned: false },
       relations: ['creator'],
     });
   }
@@ -42,7 +49,10 @@ export class ProjectsService {
     return project;
   }
 
-  async update(id: number, updateProjectDto: UpdateProjectDto): Promise<Project> {
+  async update(
+    id: number,
+    updateProjectDto: UpdateProjectDto,
+  ): Promise<Project> {
     const project = await this.findOne(id);
     if (project.isBanned) {
       throw new ConflictException('Cannot update a banned project');
@@ -55,7 +65,10 @@ export class ProjectsService {
     if (project.isBanned) {
       throw new ConflictException('Project is already banned');
     }
-    return this.projectRepositoryService.update(id, { isBanned: true, banNote });
+    return this.projectRepositoryService.update(id, {
+      isBanned: true,
+      banNote,
+    });
   }
 
   async remove(id: number): Promise<void> {
