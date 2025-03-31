@@ -18,6 +18,9 @@ export class Project {
   @Column()
   title: string;
 
+  @Column({ unique: true })
+  slug: string;
+
   @Column({ type: 'text' })
   description: string;
 
@@ -30,9 +33,6 @@ export class Project {
 
   @Column({ nullable: true })
   githubLink: string;
-
-  @Column({ unique: true, nullable: true })
-  shareableLink: string;
 
   @Column({ default: false })
   isBanned: boolean;
