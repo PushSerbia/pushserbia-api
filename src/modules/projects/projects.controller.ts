@@ -4,7 +4,6 @@ import {
   Delete,
   Get,
   Param,
-  ParseIntPipe,
   Patch,
   Post,
   Query,
@@ -33,28 +32,25 @@ export class ProjectsController {
   }
 
   @Get(':id')
-  async findOne(@Param('id', ParseIntPipe) id: number) {
+  async findOne(@Param('id') id: string) {
     return await this.projectsService.findOne(id);
   }
 
   @Patch(':id')
   async update(
-    @Param('id', ParseIntPipe) id: number,
+    @Param('id') id: string,
     @Body() updateProjectDto: UpdateProjectDto,
   ) {
     return await this.projectsService.update(id, updateProjectDto);
   }
 
   @Patch(':id/ban')
-  async banProject(
-    @Param('id', ParseIntPipe) id: number,
-    @Body('banNote') banNote: string,
-  ) {
+  async banProject(@Param('id') id: string, @Body('banNote') banNote: string) {
     return await this.projectsService.banProject(id, banNote);
   }
 
   @Delete(':id')
-  async remove(@Param('id', ParseIntPipe) id: number) {
+  async remove(@Param('id') id: string) {
     return await this.projectsService.remove(id);
   }
 }

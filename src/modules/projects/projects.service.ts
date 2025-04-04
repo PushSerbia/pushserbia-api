@@ -41,7 +41,7 @@ export class ProjectsService {
     });
   }
 
-  async findOne(id: number): Promise<Project> {
+  async findOne(id: string): Promise<Project> {
     const project = await this.projectRepositoryService.findOne(id);
     if (!project) {
       throw new NotFoundException(`Project with id ${id} not found`);
@@ -50,7 +50,7 @@ export class ProjectsService {
   }
 
   async update(
-    id: number,
+    id: string,
     updateProjectDto: UpdateProjectDto,
   ): Promise<Project> {
     const project = await this.findOne(id);
@@ -60,7 +60,7 @@ export class ProjectsService {
     return this.projectRepositoryService.update(id, updateProjectDto);
   }
 
-  async banProject(id: number, banNote: string): Promise<Project> {
+  async banProject(id: string, banNote: string): Promise<Project> {
     const project = await this.findOne(id);
     if (project.isBanned) {
       throw new ConflictException('Project is already banned');
@@ -71,7 +71,7 @@ export class ProjectsService {
     });
   }
 
-  async remove(id: number): Promise<void> {
+  async remove(id: string): Promise<void> {
     await this.projectRepositoryService.remove(id);
   }
 }
