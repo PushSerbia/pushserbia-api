@@ -22,9 +22,8 @@ export class ProjectsService {
   ): Promise<Project> {
     const newProjectData = {
       ...createProjectDto,
-      creator,
+      creatorId: creator.id,
       status: ProjectStatus.PENDING,
-      shareableLink: uuidv4(), //random za sada
     };
     try {
       return await this.projectRepositoryService.create(newProjectData);
