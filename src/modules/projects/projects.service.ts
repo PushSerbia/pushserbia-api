@@ -6,10 +6,9 @@ import {
 import { CreateProjectDto } from './dto/create-project.dto';
 import { UpdateProjectDto } from './dto/update-project.dto';
 import { Project } from './entities/project.entity';
-import { User } from '../users/entities/user.entity';
 import { ProjectStatus } from './enums/project-status.enum';
-import { v4 as uuidv4 } from 'uuid';
 import { ProjectRepositoryService } from './projects.repository';
+import { CurrentUser } from '../auth/entities/current.user.entity';
 
 @Injectable()
 export class ProjectsService {
@@ -19,7 +18,7 @@ export class ProjectsService {
 
   async create(
     createProjectDto: CreateProjectDto,
-    creator: User,
+    creator: CurrentUser,
   ): Promise<Project> {
     const newProjectData = {
       ...createProjectDto,
