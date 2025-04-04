@@ -1,7 +1,8 @@
-import { Controller, Get, Param, Post } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post } from '@nestjs/common';
 import { VotesService } from './votes.service';
 import { GetUser } from '../../core/decorators/get-user.decorator';
 import { User } from '../users/entities/user.entity';
+import { CreateVoteDto } from './dto/create-vote.dto';
 
 @Controller('votes')
 export class VotesController {
@@ -14,12 +15,12 @@ export class VotesController {
     });
   }
 
-  @Post(':projectId')
-  async voteForProject(
-    @Param('projectId') projectId: string,
-    @GetUser() user: User,
-  ) {
-    return await this.votesService.voteForProject(user, projectId);
+  @Post()
+  async create(@Body() createVoteDto: CreateVoteDto, @GetUser() user: User) {
+    return await this.votesService.voteForProject({
+      userId: user.id,
+      projectId: createVoteDto.projectId,
+    });
   }
 
   @Get(':projectId/count')

@@ -4,7 +4,6 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { ProjectsService } from '../projects/projects.service';
-import { User } from '../users/entities/user.entity';
 import { Vote } from './entities/vote.entity';
 import { VoteRepositoryService } from './votes.repository';
 import { UsersService } from '../users/users.service';
@@ -17,26 +16,28 @@ export class VotesService {
     private readonly usersService: UsersService,
   ) {}
 
-  async voteForProject(user: User, projectId: string): Promise<Vote> {
-    const project = await this.projectsService.findOne(projectId);
+  async voteForProject(params: {
+    userId: string;
+    projectId: string;
+  }): Promise<Vote> {
+    const project = await this.projectsService.findOne(params.projectId);
     if (!project) {
-      throw new NotFoundException(`Project with id ${projectId} not found`);
+      throw new NotFoundException(
+        `Project with id ${params.projectId} not found`,
+      );
     }
     if (project.isBanned) {
       throw new ConflictException('Cannot vote for a banned project');
     }
-    const existingVote = await this.voteRepositoryService.findOneBy({
-      user: { id: user.id } as any,
-      project: { id: projectId } as any,
-    });
+    const existingVote = await this.voteRepositoryService.findOneBy(params);
     if (existingVote) {
       throw new ConflictException('User has already voted for this project');
     }
-    const userData = await this.usersService.findOneBy({ id: user.id });
+    const userData = await this.usersService.findOneBy({ id: params.userId });
     if (!userData) {
       throw new NotFoundException(`User not found`);
     }
-    const voteData = { userId: user.id, projectId, weight: userData.level };
+    const voteData = { ...params, weight: userData.level };
     return this.voteRepositoryService.create(voteData);
   }
 

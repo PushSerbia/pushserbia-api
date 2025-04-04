@@ -11,6 +11,7 @@ import { Exclude } from 'class-transformer';
 
 @Entity()
 export class Vote {
+  @Exclude()
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
