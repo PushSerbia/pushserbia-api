@@ -7,18 +7,27 @@ import {
 } from 'typeorm';
 import { User } from '../../users/entities/user.entity';
 import { Project } from '../../projects/entities/project.entity';
+import { Exclude } from 'class-transformer';
 
 @Entity()
 export class Vote {
+  @Exclude()
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @ManyToOne(() => User, { eager: true })
+  @Column({ type: 'string' })
+  userId: string;
+
+  @ManyToOne(() => User)
   user: User;
 
-  @ManyToOne(() => Project, { eager: true })
+  @Column({ type: 'string' })
+  projectId: string;
+
+  @ManyToOne(() => Project)
   project: Project;
 
+  @Exclude()
   @Column({ type: 'int' })
   weight: number;
 
