@@ -35,7 +35,10 @@ export class Project {
   status: ProjectStatus;
 
   @Column({ type: 'int', default: 0 })
-  voteCounter: number;
+  totalVotes: number;
+
+  @Column({ type: 'int', default: 0 })
+  totalVoters: number;
 
   @Column({ nullable: true })
   github: string;
