@@ -72,4 +72,8 @@ export class ProjectsService {
   async remove(id: string): Promise<void> {
     await this.projectRepositoryService.remove(id);
   }
+
+  incrementVotes(id: string, voteWeight: number) {
+    return this.projectRepositoryService.incrementVotes(id, voteWeight);
+  }
 }
