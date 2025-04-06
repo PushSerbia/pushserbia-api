@@ -4,7 +4,6 @@ import {
   Delete,
   Get,
   Param,
-  ParseIntPipe,
   Patch,
   Post,
   Query,
@@ -12,8 +11,8 @@ import {
 import { ProjectsService } from './projects.service';
 import { CreateProjectDto } from './dto/create-project.dto';
 import { UpdateProjectDto } from './dto/update-project.dto';
-import { User } from '../users/entities/user.entity';
 import { GetUser } from '../../core/decorators/get-user.decorator';
+import { CurrentUser } from '../auth/entities/current.user.entity';
 
 @Controller('projects')
 export class ProjectsController {
@@ -22,7 +21,7 @@ export class ProjectsController {
   @Post()
   async create(
     @Body() createProjectDto: CreateProjectDto,
-    @GetUser() user: User,
+    @GetUser() user: CurrentUser,
   ) {
     return await this.projectsService.create(createProjectDto, user);
   }
@@ -33,28 +32,25 @@ export class ProjectsController {
   }
 
   @Get(':id')
-  async findOne(@Param('id', ParseIntPipe) id: number) {
+  async findOne(@Param('id') id: string) {
     return await this.projectsService.findOne(id);
   }
 
   @Patch(':id')
   async update(
-    @Param('id', ParseIntPipe) id: number,
+    @Param('id') id: string,
     @Body() updateProjectDto: UpdateProjectDto,
   ) {
     return await this.projectsService.update(id, updateProjectDto);
   }
 
   @Patch(':id/ban')
-  async banProject(
-    @Param('id', ParseIntPipe) id: number,
-    @Body('banNote') banNote: string,
-  ) {
+  async banProject(@Param('id') id: string, @Body('banNote') banNote: string) {
     return await this.projectsService.banProject(id, banNote);
   }
 
   @Delete(':id')
-  async remove(@Param('id', ParseIntPipe) id: number) {
+  async remove(@Param('id') id: string) {
     return await this.projectsService.remove(id);
   }
 }

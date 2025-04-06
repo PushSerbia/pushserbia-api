@@ -46,6 +46,9 @@ export class Project {
   @Column({ nullable: true })
   banNote: string;
 
+  @Column()
+  creatorId: string;
+
   @ManyToOne(() => User)
   @JoinColumn({ name: 'creatorId' })
   creator: User;

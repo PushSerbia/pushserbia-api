@@ -6,10 +6,9 @@ import {
 import { CreateProjectDto } from './dto/create-project.dto';
 import { UpdateProjectDto } from './dto/update-project.dto';
 import { Project } from './entities/project.entity';
-import { User } from '../users/entities/user.entity';
 import { ProjectStatus } from './enums/project-status.enum';
-import { v4 as uuidv4 } from 'uuid';
 import { ProjectRepositoryService } from './projects.repository';
+import { CurrentUser } from '../auth/entities/current.user.entity';
 
 @Injectable()
 export class ProjectsService {
@@ -19,13 +18,12 @@ export class ProjectsService {
 
   async create(
     createProjectDto: CreateProjectDto,
-    creator: User,
+    creator: CurrentUser,
   ): Promise<Project> {
     const newProjectData = {
       ...createProjectDto,
-      creator,
+      creatorId: creator.id,
       status: ProjectStatus.PENDING,
-      shareableLink: uuidv4(), //random za sada
     };
     try {
       return await this.projectRepositoryService.create(newProjectData);
@@ -41,7 +39,7 @@ export class ProjectsService {
     });
   }
 
-  async findOne(id: number): Promise<Project> {
+  async findOne(id: string): Promise<Project> {
     const project = await this.projectRepositoryService.findOne(id);
     if (!project) {
       throw new NotFoundException(`Project with id ${id} not found`);
@@ -50,7 +48,7 @@ export class ProjectsService {
   }
 
   async update(
-    id: number,
+    id: string,
     updateProjectDto: UpdateProjectDto,
   ): Promise<Project> {
     const project = await this.findOne(id);
@@ -60,7 +58,7 @@ export class ProjectsService {
     return this.projectRepositoryService.update(id, updateProjectDto);
   }
 
-  async banProject(id: number, banNote: string): Promise<Project> {
+  async banProject(id: string, banNote: string): Promise<Project> {
     const project = await this.findOne(id);
     if (project.isBanned) {
       throw new ConflictException('Project is already banned');
@@ -71,7 +69,7 @@ export class ProjectsService {
     });
   }
 
-  async remove(id: number): Promise<void> {
+  async remove(id: string): Promise<void> {
     await this.projectRepositoryService.remove(id);
   }
 }
