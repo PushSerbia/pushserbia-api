@@ -71,7 +71,7 @@ export class UsersController {
   }
 
   @Get('me')
-  async me(@GetUser() user: any) {
+  async me(@GetUser() user?: CurrentUser) {
     if (!user?.id) {
       throw new HttpException('User not found', HttpStatus.NOT_FOUND);
     }

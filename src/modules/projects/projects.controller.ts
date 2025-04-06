@@ -11,8 +11,8 @@ import {
 import { ProjectsService } from './projects.service';
 import { CreateProjectDto } from './dto/create-project.dto';
 import { UpdateProjectDto } from './dto/update-project.dto';
-import { User } from '../users/entities/user.entity';
 import { GetUser } from '../../core/decorators/get-user.decorator';
+import { CurrentUser } from '../auth/entities/current.user.entity';
 
 @Controller('projects')
 export class ProjectsController {
@@ -21,7 +21,7 @@ export class ProjectsController {
   @Post()
   async create(
     @Body() createProjectDto: CreateProjectDto,
-    @GetUser() user: User,
+    @GetUser() user: CurrentUser,
   ) {
     return await this.projectsService.create(createProjectDto, user);
   }
