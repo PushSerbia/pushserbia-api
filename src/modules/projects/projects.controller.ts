@@ -13,6 +13,7 @@ import { CreateProjectDto } from './dto/create-project.dto';
 import { UpdateProjectDto } from './dto/update-project.dto';
 import { GetUser } from '../../core/decorators/get-user.decorator';
 import { CurrentUser } from '../auth/entities/current.user.entity';
+import { DEFAULT_PAGE_SIZE, DEFAULT_PAGE_NUMBER } from 'src/core/constants/constants';
 
 @Controller('projects')
 export class ProjectsController {
@@ -27,10 +28,24 @@ export class ProjectsController {
   }
 
   @Get()
-  findAll(@Query('slug') slug: string) {
-    return this.projectsService.findAll(slug ? { slug } : undefined);
-  }
+  async findAll(
+    @Query('slug') slug: string,
+    @Query('page') page?: number,
+    @Query('pageSize') pageSize?: number,
+  ) {
+    if (page !== undefined || pageSize !== undefined) {
+      let _pageSize = pageSize ? Number(pageSize) : DEFAULT_PAGE_SIZE;
+      let _page = page && Number(page) > 0 ? Number(page) : DEFAULT_PAGE_NUMBER;
+      const offset = (_page - 1) * _pageSize;
 
+      return await this.projectsService.findAllOffset(
+        slug ? { slug } : undefined,
+        _pageSize,
+        offset,
+      );
+    }
+    return await this.projectsService.findAll(slug ? { slug } : undefined);
+  }
   @Get(':id')
   async findOne(@Param('id') id: string) {
     return await this.projectsService.findOne(id);

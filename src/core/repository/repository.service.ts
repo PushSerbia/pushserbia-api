@@ -1,5 +1,6 @@
 import {
   DeepPartial,
+  FindManyOptions,
   FindOptionsWhere,
   InsertResult,
   Repository,
@@ -68,6 +69,14 @@ export abstract class RepositoryService<T extends { id: string | number }> {
       await this.repository.delete(criteria);
     } else {
       await this.repository.delete(criteria as FindOptionsWhere<T>);
+    }
+  }
+
+  async count(options: FindManyOptions<T> = {}): Promise<number> {
+    try {
+      return await this.repository.count(options);
+    } catch (error) {
+      throw new BadRequestException(`Error counting records: ${error.message}`);
     }
   }
 }

@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   ConflictException,
   Injectable,
   NotFoundException,
@@ -9,6 +10,7 @@ import { Project } from './entities/project.entity';
 import { ProjectStatus } from './enums/project-status.enum';
 import { ProjectRepositoryService } from './projects.repository';
 import { CurrentUser } from '../auth/entities/current.user.entity';
+import { DEFAULT_PAGE_SIZE } from 'src/core/constants/constants';
 
 @Injectable()
 export class ProjectsService {
@@ -37,6 +39,51 @@ export class ProjectsService {
       where: { ...options, isBanned: false },
       relations: ['creator'],
     });
+  }
+
+  async findAllOffset(
+    options?: Partial<Project>,
+    limit: number = DEFAULT_PAGE_SIZE,
+    offset: number = 0,
+  ): Promise<{
+    data: Project[];
+    total: number;
+    limit: number;
+    offset: number;
+    currentPage: number;
+    totalPages: number;
+  }> {
+    if (limit < 1) {
+      throw new BadRequestException('Limit must be at least 1');
+    }
+    if (offset < 0) {
+      throw new BadRequestException('Offset must be non-negative');
+    }
+
+    const queryOptions: any = {
+      where: { ...options, isBanned: false },
+      order: { id: 'ASC' },
+      take: limit,
+      skip: offset,
+      relations: ['creator'],
+    };
+
+    const data = await this.projectRepositoryService.findAll(queryOptions);
+    const total = await this.projectRepositoryService.count({
+      where: { ...options, isBanned: false },
+    });
+
+    const totalPages = total > 0 ? Math.ceil(total / limit) : 0;
+    const currentPage = total > 0 ? Math.floor(offset / limit) + 1 : 0;
+
+    return {
+      data,
+      total,
+      limit,
+      offset,
+      currentPage,
+      totalPages,
+    };
   }
 
   async findOne(id: string): Promise<Project> {
