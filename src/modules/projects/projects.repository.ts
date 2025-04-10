@@ -16,4 +16,16 @@ export class ProjectRepositoryService extends RepositoryService<Project> {
   protected get repository(): Repository<Project> {
     return this.projectRepo;
   }
+
+  incrementVotes(id: string, voteWeight: number) {
+    return this.projectRepo
+      .createQueryBuilder()
+      .update()
+      .set({
+        totalVotes: () => 'totalVotes + :voteWeight',
+        totalVoters: () => 'totalVoters + 1',
+      })
+      .where('id = :id', { id, voteWeight })
+      .execute();
+  }
 }

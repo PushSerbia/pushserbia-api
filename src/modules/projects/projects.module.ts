@@ -4,9 +4,15 @@ import { ProjectsController } from './projects.controller';
 import { ProjectsService } from './projects.service';
 import { Project } from './entities/project.entity';
 import { ProjectRepositoryService } from './projects.repository';
+import { BullModule } from '@nestjs/bullmq';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Project])],
+  imports: [
+    TypeOrmModule.forFeature([Project]),
+    BullModule.registerQueue({
+      name: 'project-events',
+    }),
+  ],
   controllers: [ProjectsController],
   providers: [ProjectsService, ProjectRepositoryService],
   exports: [ProjectsService],

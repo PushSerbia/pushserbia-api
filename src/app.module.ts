@@ -19,6 +19,7 @@ import firebaseConfig from './core/config/firebase.config';
 import { AuthMiddleware } from './modules/auth/middlewares/auth.middleware';
 import { ValidTokenOnlyMiddleware } from './modules/auth/middlewares/valid-token-only/valid-token-only.middleware';
 import authConfig from './core/config/auth.config';
+import { BullModule } from '@nestjs/bullmq';
 
 @Module({
   imports: [
@@ -32,6 +33,11 @@ import authConfig from './core/config/auth.config';
       ssl: { rejectUnauthorized: false },
       autoLoadEntities: true,
       synchronize: true,
+    }),
+    BullModule.forRoot({
+      connection: {
+        path: process.env.REDIS_URL,
+      },
     }),
     MailchimpModule,
     AuthModule,
