@@ -6,7 +6,7 @@ import {
 } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
-import { ConfigModule } from '@nestjs/config';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 import mailchimpConfig from './core/config/mailchimp.config';
 import { MailchimpModule } from './integrations/mailchimp/mailchimp.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
@@ -19,13 +19,21 @@ import firebaseConfig from './core/config/firebase.config';
 import { AuthMiddleware } from './modules/auth/middlewares/auth.middleware';
 import { ValidTokenOnlyMiddleware } from './modules/auth/middlewares/valid-token-only/valid-token-only.middleware';
 import authConfig from './core/config/auth.config';
+import redisConfig from './core/config/redis.config';
 import { BullModule } from '@nestjs/bullmq';
+import { QueueOptions } from 'bullmq';
 
 @Module({
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
-      load: [mailchimpConfig, linkedinConfig, firebaseConfig, authConfig],
+      load: [
+        mailchimpConfig,
+        linkedinConfig,
+        firebaseConfig,
+        authConfig,
+        redisConfig,
+      ],
     }),
     TypeOrmModule.forRoot({
       type: 'postgres',
@@ -34,10 +42,16 @@ import { BullModule } from '@nestjs/bullmq';
       autoLoadEntities: true,
       synchronize: true,
     }),
-    BullModule.forRoot({
-      connection: {
-        path: process.env.REDIS_URL,
+    BullModule.forRootAsync({
+      imports: [ConfigModule],
+      useFactory: (configService: ConfigService) => {
+        const config = configService.get<QueueOptions>('redis');
+        if (config) {
+          return config;
+        }
+        throw new Error('Redis connection options are not defined');
       },
+      inject: [ConfigService],
     }),
     MailchimpModule,
     AuthModule,

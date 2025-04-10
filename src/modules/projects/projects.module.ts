@@ -15,6 +15,6 @@ import { BullModule } from '@nestjs/bullmq';
   ],
   controllers: [ProjectsController],
   providers: [ProjectsService, ProjectRepositoryService],
-  exports: [ProjectsService],
+  exports: [ProjectsService, BullModule],
 })
 export class ProjectsModule {}
