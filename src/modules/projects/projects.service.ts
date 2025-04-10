@@ -10,7 +10,7 @@ import { Project } from './entities/project.entity';
 import { ProjectStatus } from './enums/project-status.enum';
 import { ProjectRepositoryService } from './projects.repository';
 import { CurrentUser } from '../auth/entities/current.user.entity';
-import { DEFAULT_PAGE_SIZE } from 'src/core/constants/constants';
+import { DEFAULT_PAGE_SIZE } from '../../core/constants/constants';
 
 @Injectable()
 export class ProjectsService {
