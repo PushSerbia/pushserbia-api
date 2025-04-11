@@ -16,7 +16,7 @@ import {
 export class VoteSubscriber implements EntitySubscriberInterface<Vote> {
   constructor(
     dataSource: DataSource,
-    @InjectQueue('project-events') private eventQueue: Queue,
+    @InjectQueue(VOTE_CREATED_EVENT) private eventQueue: Queue,
   ) {
     dataSource.subscribers.push(this);
   }
