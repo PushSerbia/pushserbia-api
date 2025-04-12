@@ -27,7 +27,6 @@ export class Vote {
   @ManyToOne(() => Project)
   project: Project;
 
-  @Exclude()
   @Column({ type: 'int' })
   weight: number;
 
