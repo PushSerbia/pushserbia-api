@@ -27,7 +27,17 @@ export class ProjectsController {
     @Body() createProjectDto: CreateProjectDto,
     @GetUser() user: CurrentUser,
   ) {
-    return await this.projectsService.create(createProjectDto, user);
+    return this.projectsService
+      .create(createProjectDto, user)
+      .then((project) => {
+        return {
+          ...project,
+          creator: {
+            id: user.id,
+            fullName: user.name,
+          },
+        };
+      });
   }
 
   @Get()
@@ -59,8 +69,17 @@ export class ProjectsController {
   async update(
     @Param('id') id: string,
     @Body() updateProjectDto: UpdateProjectDto,
+    @GetUser() user: CurrentUser,
   ) {
-    return await this.projectsService.update(id, updateProjectDto);
+    return this.projectsService.update(id, updateProjectDto).then((project) => {
+      return {
+        ...project,
+        creator: {
+          id: user.id,
+          fullName: user.name,
+        },
+      };
+    });
   }
 
   @Patch(':id/ban')
