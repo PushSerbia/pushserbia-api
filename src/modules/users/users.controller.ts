@@ -58,7 +58,6 @@ export class UsersController {
     const account = await this.usersService.create({
       ...createUserDto,
       firebaseUid: user.uid,
-      fullName: createUserDto.fullName,
     });
 
     await this.firebaseAuthService.setCustomUserData(user.uid, {
@@ -83,13 +82,6 @@ export class UsersController {
       throw new HttpException('User not linked', HttpStatus.NOT_FOUND);
     }
     return me;
-  }
-
-  @Get(':firebaseUid')
-  async findByFirebaseUid(
-    @Param('firebaseUid') firebaseUid: string,
-  ): Promise<User> {
-    return this.usersService.findByFirebaseUid(firebaseUid);
   }
 
   @Post(':id/block')

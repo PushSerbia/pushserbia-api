@@ -24,6 +24,9 @@ export class User {
   @Column()
   fullName: string;
 
+  @Column({ nullable: true })
+  imageUrl: string;
+
   @Exclude()
   @Column({ default: 1 })
   level: number;
