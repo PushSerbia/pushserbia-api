@@ -86,6 +86,19 @@ export class UsersController {
     return me;
   }
 
+  @Patch('me')
+  async updateMe(
+    @Body()
+    payload: Pick<UpdateUserDto, 'fullName' | 'gitHubUrl' | 'linkedInUrl'>,
+    @GetUser() user?: CurrentUser,
+  ): Promise<User> {
+    if (!user?.id) {
+      throw new HttpException('User not found', HttpStatus.NOT_FOUND);
+    }
+
+    return await this.usersService.update(user.id, payload);
+  }
+
   @Post(':id/block')
   async blockUser(@Param('id', ParseIntPipe) id: number): Promise<User> {
     return this.usersService.blockUser(id);
