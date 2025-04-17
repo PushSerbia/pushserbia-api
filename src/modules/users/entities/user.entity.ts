@@ -6,7 +6,7 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 import { UserRole } from '../enums/user-role';
-import { Exclude } from 'class-transformer';
+import { Exclude, Expose } from 'class-transformer';
 
 @Entity()
 export class User {
@@ -17,7 +17,7 @@ export class User {
   @Column({ unique: true })
   firebaseUid: string;
 
-  @Exclude()
+  @Expose({ groups: ['me'] })
   @Column({ unique: true })
   email: string;
 
@@ -27,15 +27,15 @@ export class User {
   @Column({ nullable: true })
   imageUrl: string;
 
-  @Exclude()
+  @Expose({ groups: ['me'] })
   @Column({ default: 1 })
   level: number;
 
-  @Exclude()
+  @Expose({ groups: ['me'] })
   @Column({ default: 'free' })
   membershipStatus: string;
 
-  @Exclude()
+  @Expose({ groups: ['me'] })
   @Column({
     type: 'enum',
     enum: UserRole,
@@ -43,15 +43,15 @@ export class User {
   })
   role: UserRole;
 
-  @Exclude()
+  @Expose({ groups: ['me'] })
   @Column({ default: false })
   isBlocked: boolean;
 
-  @Exclude()
+  @Expose({ groups: ['me'] })
   @CreateDateColumn()
   createdAt: Date;
 
-  @Exclude()
+  @Expose({ groups: ['me'] })
   @UpdateDateColumn()
   updatedAt: Date;
 }
