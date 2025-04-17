@@ -9,6 +9,7 @@ import {
   ParseIntPipe,
   Patch,
   Post,
+  SerializeOptions,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { User } from './entities/user.entity';
@@ -70,6 +71,7 @@ export class UsersController {
   }
 
   @Get('me')
+  @SerializeOptions({ groups: ['me'] })
   async me(@GetUser() user?: CurrentUser) {
     if (!user?.id) {
       throw new HttpException('User not found', HttpStatus.NOT_FOUND);
