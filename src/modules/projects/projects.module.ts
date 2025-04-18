@@ -3,7 +3,6 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { ProjectsController } from './projects.controller';
 import { ProjectsService } from './projects.service';
 import { Project } from './entities/project.entity';
-import { ProjectRepositoryService } from './projects.repository';
 import { BullModule } from '@nestjs/bullmq';
 import {
   VOTE_CREATED_EVENT,
@@ -27,7 +26,7 @@ import {
     }),
   ],
   controllers: [ProjectsController],
-  providers: [ProjectsService, ProjectRepositoryService, VoteCreatedProcessor],
+  providers: [ProjectsService, VoteCreatedProcessor],
   exports: [ProjectsService, BullModule],
 })
 export class ProjectsModule {}

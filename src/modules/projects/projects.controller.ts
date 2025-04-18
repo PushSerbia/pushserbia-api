@@ -17,6 +17,7 @@ import {
   DEFAULT_PAGE_NUMBER,
   DEFAULT_PAGE_SIZE,
 } from '../../core/constants/constants';
+import { ProjectStatus } from './enums/project-status.enum';
 
 @Controller('projects')
 export class ProjectsController {
@@ -25,23 +26,26 @@ export class ProjectsController {
   @Post()
   async create(
     @Body() createProjectDto: CreateProjectDto,
-    @GetUser() user: CurrentUser,
+    @GetUser() creator: CurrentUser,
   ) {
-    return this.projectsService
-      .create(createProjectDto, user)
-      .then((project) => {
-        return {
-          ...project,
-          creator: {
-            id: user.id,
-            fullName: user.name,
-          },
-        };
-      });
+    const newProjectData = {
+      ...createProjectDto,
+      creatorId: creator.id,
+      status: ProjectStatus.PENDING,
+    };
+    const project = await this.projectsService.create(newProjectData);
+    return {
+      ...project,
+      creator: {
+        id: creator.id,
+        fullName: creator.name,
+        imageUrl: creator.imageUrl,
+      },
+    };
   }
 
   @Get()
-  async findAll(
+  findAll(
     @Query('slug') slug: string,
     @Query('page') page?: number,
     @Query('pageSize') pageSize?: number,
@@ -52,17 +56,18 @@ export class ProjectsController {
         page && Number(page) > 0 ? Number(page) : DEFAULT_PAGE_NUMBER;
       const offset = (_page - 1) * _pageSize;
 
-      return await this.projectsService.findAllOffset(
+      return this.projectsService.findAllOffset(
         slug ? { slug } : undefined,
         _pageSize,
         offset,
       );
     }
-    return await this.projectsService.findAll(slug ? { slug } : undefined);
+    return this.projectsService.findAll(slug ? { slug } : undefined);
   }
+
   @Get(':id')
-  async findOne(@Param('id') id: string) {
-    return await this.projectsService.findOne(id);
+  findOne(@Param('id') id: string) {
+    return this.projectsService.findOne(id);
   }
 
   @Patch(':id')
@@ -71,24 +76,23 @@ export class ProjectsController {
     @Body() updateProjectDto: UpdateProjectDto,
     @GetUser() user: CurrentUser,
   ) {
-    return this.projectsService.update(id, updateProjectDto).then((project) => {
-      return {
-        ...project,
-        creator: {
-          id: user.id,
-          fullName: user.name,
-        },
-      };
-    });
+    const project = await this.projectsService.update(id, updateProjectDto);
+    return {
+      ...project,
+      creator: {
+        id: user.id,
+        fullName: user.name,
+      },
+    };
   }
 
   @Patch(':id/ban')
-  async banProject(@Param('id') id: string, @Body('banNote') banNote: string) {
-    return await this.projectsService.banProject(id, banNote);
+  banProject(@Param('id') id: string, @Body('banNote') banNote: string) {
+    return this.projectsService.update(id, { isBanned: true, banNote });
   }
 
   @Delete(':id')
-  async remove(@Param('id') id: string) {
-    return await this.projectsService.remove(id);
+  remove(@Param('id') id: string) {
+    return this.projectsService.remove(id);
   }
 }

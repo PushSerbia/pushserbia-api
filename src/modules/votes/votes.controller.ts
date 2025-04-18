@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Post } from '@nestjs/common';
+import { Body, Controller, Get, Post } from '@nestjs/common';
 import { VotesService } from './votes.service';
 import { GetUser } from '../../core/decorators/get-user.decorator';
 import { CreateVoteDto } from './dto/create-vote.dto';
@@ -10,7 +10,7 @@ export class VotesController {
 
   @Get('my-votes')
   getMyVotes(@GetUser() user: CurrentUser) {
-    return this.votesService.fetchAll({
+    return this.votesService.findAll({
       where: { userId: user.id },
     });
   }
@@ -24,11 +24,5 @@ export class VotesController {
       userId: user.id,
       projectId: createVoteDto.projectId,
     });
-  }
-
-  @Get(':projectId/count')
-  async getProjectVoteCount(@Param('projectId') projectId: number) {
-    const voteCount = await this.votesService.getProjectVoteCount(projectId);
-    return { projectId, voteCount };
   }
 }

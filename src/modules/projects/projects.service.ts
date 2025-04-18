@@ -1,41 +1,21 @@
-import {
-  BadRequestException,
-  ConflictException,
-  Injectable,
-  NotFoundException,
-} from '@nestjs/common';
-import { CreateProjectDto } from './dto/create-project.dto';
-import { UpdateProjectDto } from './dto/update-project.dto';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { Project } from './entities/project.entity';
-import { ProjectStatus } from './enums/project-status.enum';
-import { ProjectRepositoryService } from './projects.repository';
-import { CurrentUser } from '../auth/entities/current.user.entity';
 import { DEFAULT_PAGE_SIZE } from '../../core/constants/constants';
+import { RepositoryService } from '../../core/repository/repository.service';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
 
 @Injectable()
-export class ProjectsService {
+export class ProjectsService extends RepositoryService<Project> {
   constructor(
-    private readonly projectRepositoryService: ProjectRepositoryService,
-  ) {}
-
-  async create(
-    createProjectDto: CreateProjectDto,
-    creator: CurrentUser,
-  ): Promise<Project> {
-    const newProjectData = {
-      ...createProjectDto,
-      creatorId: creator.id,
-      status: ProjectStatus.PENDING,
-    };
-    try {
-      return await this.projectRepositoryService.create(newProjectData);
-    } catch (error) {
-      throw new ConflictException('Error creating project: ' + error.message);
-    }
+    @InjectRepository(Project)
+    protected readonly repository: Repository<Project>,
+  ) {
+    super();
   }
 
   async findAll(options?: Partial<Project>): Promise<Project[]> {
-    return this.projectRepositoryService.findAll({
+    return this.repository.find({
       where: { ...options, isBanned: false },
       relations: ['creator'],
     });
@@ -68,8 +48,8 @@ export class ProjectsService {
       relations: ['creator'],
     };
 
-    const data = await this.projectRepositoryService.findAll(queryOptions);
-    const total = await this.projectRepositoryService.count({
+    const data = await this.repository.find(queryOptions);
+    const total = await this.repository.count({
       where: { ...options, isBanned: false },
     });
 
@@ -86,41 +66,15 @@ export class ProjectsService {
     };
   }
 
-  async findOne(id: string): Promise<Project> {
-    const project = await this.projectRepositoryService.findOne(id);
-    if (!project) {
-      throw new NotFoundException(`Project with id ${id} not found`);
-    }
-    return project;
-  }
-
-  async update(
-    id: string,
-    updateProjectDto: UpdateProjectDto,
-  ): Promise<Project> {
-    const project = await this.findOne(id);
-    if (project.isBanned) {
-      throw new ConflictException('Cannot update a banned project');
-    }
-    return this.projectRepositoryService.update(id, updateProjectDto);
-  }
-
-  async banProject(id: string, banNote: string): Promise<Project> {
-    const project = await this.findOne(id);
-    if (project.isBanned) {
-      throw new ConflictException('Project is already banned');
-    }
-    return this.projectRepositoryService.update(id, {
-      isBanned: true,
-      banNote,
-    });
-  }
-
-  async remove(id: string): Promise<void> {
-    await this.projectRepositoryService.remove(id);
-  }
-
   incrementVotes(id: string, voteWeight: number) {
-    return this.projectRepositoryService.incrementVotes(id, voteWeight);
+    return this.repository
+      .createQueryBuilder()
+      .update()
+      .set({
+        totalVotes: () => 'totalVotes + :voteWeight',
+        totalVoters: () => 'totalVoters + 1',
+      })
+      .where('id = :id', { id, voteWeight })
+      .execute();
   }
 }
