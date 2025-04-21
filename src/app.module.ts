@@ -22,6 +22,12 @@ import authConfig from './core/config/auth.config';
 import redisConfig from './core/config/redis.config';
 import { BullModule } from '@nestjs/bullmq';
 import { QueueOptions } from 'bullmq';
+import { LoggingModule } from './modules/logging/logging.module';
+import { LoggingMiddleware } from './core/middlewares/logging.middleware';
+import { ThrottlerModule } from '@nestjs/throttler';
+import { APP_GUARD } from '@nestjs/core';
+import { AppThrottlerGuard } from './core/throttler.guard';
+import { ThrottlerMiddleware } from './core/middlewares/throttler.middleware';
 
 @Module({
   imports: [
@@ -58,9 +64,27 @@ import { QueueOptions } from 'bullmq';
     UsersModule,
     ProjectsModule,
     VotesModule,
+    LoggingModule,
+    // ThrottlerModule is used for requests that are not under AuthMiddleware
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
+    ThrottlerModule.forRoot({
+      throttlers: [
+        {
+          ttl: 60000,
+          limit: 10,
+        },
+      ],
+      errorMessage: 'Too many requests. Try again later.',
+    }),
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [
+    AppService,
+    {
+      provide: APP_GUARD,
+      useClass: AppThrottlerGuard,
+    },
+  ],
 })
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
@@ -69,8 +93,10 @@ export class AppModule implements NestModule {
       { path: '/users/account', method: RequestMethod.GET },
     ];
 
+    consumer.apply(LoggingMiddleware).forRoutes('*');
+
     consumer
-      .apply(AuthMiddleware)
+      .apply(ThrottlerMiddleware, AuthMiddleware)
       .exclude(
         { path: '', method: RequestMethod.ALL },
         { path: '/integrations/subscribe', method: RequestMethod.POST },
