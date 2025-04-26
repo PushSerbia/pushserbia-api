@@ -7,6 +7,7 @@ import {
   Patch,
   Post,
   Query,
+  UseGuards,
 } from '@nestjs/common';
 import { ProjectsService } from './projects.service';
 import { CreateProjectDto } from './dto/create-project.dto';
@@ -18,6 +19,9 @@ import {
   DEFAULT_PAGE_SIZE,
 } from '../../core/constants/constants';
 import { ProjectStatus } from './enums/project-status.enum';
+import { Roles } from '../auth/decorators/roles.decorator';
+import { UserRole } from '../users/enums/user-role';
+import { RolesGuard } from '../auth/guards/roles.guard';
 
 @Controller('projects')
 export class ProjectsController {
@@ -76,23 +80,33 @@ export class ProjectsController {
     @Body() updateProjectDto: UpdateProjectDto,
     @GetUser() user: CurrentUser,
   ) {
-    const project = await this.projectsService.update(id, updateProjectDto);
+    const criteria =
+      user.role === UserRole.Admin ? { id } : { id, creatorId: user.id };
+    const project = await this.projectsService.update(
+      criteria,
+      updateProjectDto,
+    );
     return {
       ...project,
       creator: {
         id: user.id,
         fullName: user.name,
+        imageUrl: user.imageUrl,
       },
     };
   }
 
   @Patch(':id/ban')
+  @UseGuards(RolesGuard)
+  @Roles([UserRole.Admin])
   banProject(@Param('id') id: string, @Body('banNote') banNote: string) {
     return this.projectsService.update(id, { isBanned: true, banNote });
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.projectsService.remove(id);
+  remove(@Param('id') id: string, @GetUser() user: CurrentUser) {
+    const criteria =
+      user.role === UserRole.Admin ? { id } : { id, creatorId: user.id };
+    return this.projectsService.remove(criteria);
   }
 }
