@@ -9,7 +9,7 @@ import { BadRequestException } from '@nestjs/common';
 import { QueryDeepPartialEntity } from 'typeorm/query-builder/QueryPartialEntity';
 
 export abstract class RepositoryService<T extends { id: string | number }> {
-  protected abstract get repository(): Repository<T>;
+  protected abstract repository: Repository<T>;
 
   async create(entity: DeepPartial<T>): Promise<T> {
     return this.repository.save(entity).catch((error) => {

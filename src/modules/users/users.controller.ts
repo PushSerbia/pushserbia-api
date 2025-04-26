@@ -88,7 +88,7 @@ export class UsersController {
 
   @Post(':id/block')
   async blockUser(@Param('id', ParseIntPipe) id: number): Promise<User> {
-    return this.usersService.blockUser(id);
+    return this.usersService.update(id, { isBlocked: true });
   }
 
   @Patch(':id')
@@ -101,11 +101,11 @@ export class UsersController {
 
   @Delete(':id')
   async deleteUser(@Param('id', ParseIntPipe) id: number): Promise<void> {
-    return this.usersService.deleteUser(id);
+    return this.usersService.remove(id);
   }
 
   @Get()
   async getAllUsers(): Promise<User[]> {
-    return this.usersService.getAllUsers();
+    return this.usersService.findAll();
   }
 }
