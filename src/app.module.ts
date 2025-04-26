@@ -22,6 +22,8 @@ import authConfig from './core/config/auth.config';
 import redisConfig from './core/config/redis.config';
 import { BullModule } from '@nestjs/bullmq';
 import { QueueOptions } from 'bullmq';
+import { LoggingModule } from './modules/logging/logging.module';
+import { LoggingMiddleware } from './core/middlewares/logging.middleware';
 
 @Module({
   imports: [
@@ -58,6 +60,7 @@ import { QueueOptions } from 'bullmq';
     UsersModule,
     ProjectsModule,
     VotesModule,
+    LoggingModule,
   ],
   controllers: [AppController],
   providers: [AppService],
@@ -68,6 +71,8 @@ export class AppModule implements NestModule {
       { path: '/users/me', method: RequestMethod.GET },
       { path: '/users/account', method: RequestMethod.GET },
     ];
+
+    consumer.apply(LoggingMiddleware).forRoutes('*');
 
     consumer
       .apply(AuthMiddleware)

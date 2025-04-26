@@ -2,9 +2,17 @@ import { NestFactory, Reflector } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { ClassSerializerInterceptor, ValidationPipe } from '@nestjs/common';
 import { ExceptionsFilter } from './core/filters/exceptions.filter';
+import { LoggingService } from './modules/logging/logging.service';
+import { HttpAdapterHost } from '@nestjs/core';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create(AppModule, {
+    bufferLogs: true,
+  });
+
+  const logger = new LoggingService();
+  logger.setContext('Application');
+  app.useLogger(logger);
 
   app.setGlobalPrefix('v1');
   app.useGlobalPipes(
@@ -23,9 +31,13 @@ async function bootstrap() {
     ],
     preflightContinue: false,
   });
-  app.useGlobalFilters(new ExceptionsFilter());
+
+  const httpAdapter = app.get(HttpAdapterHost);
+  app.useGlobalFilters(new ExceptionsFilter(httpAdapter, logger));
   app.useGlobalInterceptors(new ClassSerializerInterceptor(app.get(Reflector)));
 
-  await app.listen(process.env.PORT ?? 3000);
+  const port = process.env.PORT ?? 3000;
+  await app.listen(port);
+  logger.log(`Application is running on: http://localhost:${port}`);
 }
 bootstrap();
