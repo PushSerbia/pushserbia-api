@@ -48,6 +48,14 @@ export class User {
   isBlocked: boolean;
 
   @Expose({ groups: ['me'] })
+  @Column({ default: 0 })
+  projectsProposed: number;
+
+  @Expose({ groups: ['me'] })
+  @Column({ default: 0 })
+  projectsSupported: number;
+
+  @Expose({ groups: ['me'] })
   @CreateDateColumn()
   createdAt: Date;
 
