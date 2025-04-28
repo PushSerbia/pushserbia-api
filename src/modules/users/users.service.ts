@@ -11,4 +11,26 @@ export class UsersService extends RepositoryService<User> {
   ) {
     super();
   }
+
+  incrementProjectsProposed(userId: string) {
+    return this.repository
+      .createQueryBuilder()
+      .update()
+      .set({
+        projectsProposed: () => 'projectsProposed + 1',
+      })
+      .where('id = :userId', { userId })
+      .execute();
+  }
+
+  incrementProjectsSupported(userId: string) {
+    return this.repository
+      .createQueryBuilder()
+      .update()
+      .set({
+        projectsSupported: () => 'projectsSupported + 1',
+      })
+      .where('id = :userId', { userId })
+      .execute();
+  }
 }
