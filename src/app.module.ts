@@ -14,6 +14,7 @@ import { UsersModule } from './modules/users/users.module';
 import { ProjectsModule } from './modules/projects/projects.module';
 import { VotesModule } from './modules/votes/votes.module';
 import { AuthModule } from './modules/auth/auth.module';
+import { QueueModule } from './modules/queue/queue.module';
 import linkedinConfig from './core/config/linkedin.config';
 import firebaseConfig from './core/config/firebase.config';
 import { AuthMiddleware } from './modules/auth/middlewares/auth.middleware';
@@ -55,6 +56,7 @@ import { QueueOptions } from 'bullmq';
     }),
     MailchimpModule,
     AuthModule,
+    QueueModule,
     UsersModule,
     ProjectsModule,
     VotesModule,
