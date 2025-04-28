@@ -43,6 +43,6 @@ export class VotesService extends RepositoryService<Vote> {
       throw new NotFoundException(`User not found`);
     }
     const voteData = { ...params, weight: userData.level };
-    return this.repository.create(voteData);
+    return this.create(voteData);
   }
 }
