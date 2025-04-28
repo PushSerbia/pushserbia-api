@@ -10,6 +10,7 @@ import {
   Patch,
   Post,
   SerializeOptions,
+  UseGuards,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { User } from './entities/user.entity';
@@ -18,8 +19,12 @@ import { GetUser } from '../../core/decorators/get-user.decorator';
 import { CreateUserDto } from './dto/create-user.dto';
 import { CurrentUser } from '../auth/entities/current.user.entity';
 import { FirebaseAuthService } from '../auth/services/firebase-auth.service';
+import { Roles } from '../auth/decorators/roles.decorator';
+import { UserRole } from './enums/user-role';
+import { RolesGuard } from '../auth/guards/roles.guard';
 
 @Controller('users')
+@UseGuards(RolesGuard)
 export class UsersController {
   constructor(
     private readonly usersService: UsersService,
@@ -27,6 +32,7 @@ export class UsersController {
   ) {}
 
   @Post()
+  @Roles([UserRole.Admin])
   async create(@Body() userData: Partial<User>): Promise<User> {
     return this.usersService.create(userData);
   }
@@ -87,24 +93,28 @@ export class UsersController {
   }
 
   @Post(':id/block')
-  async blockUser(@Param('id', ParseIntPipe) id: number): Promise<User> {
+  @Roles([UserRole.Admin])
+  async blockUser(@Param('id', ParseIntPipe) id: string) {
     return this.usersService.update(id, { isBlocked: true });
   }
 
   @Patch(':id')
+  @Roles([UserRole.Admin])
   async updateUser(
-    @Param('id', ParseIntPipe) id: number,
+    @Param('id', ParseIntPipe) id: string,
     @Body() updateUserDto: UpdateUserDto,
-  ): Promise<User> {
+  ) {
     return this.usersService.update(id, updateUserDto);
   }
 
   @Delete(':id')
-  async deleteUser(@Param('id', ParseIntPipe) id: number): Promise<void> {
+  @Roles([UserRole.Admin])
+  async deleteUser(@Param('id', ParseIntPipe) id: string): Promise<void> {
     return this.usersService.remove(id);
   }
 
   @Get()
+  @Roles([UserRole.Admin])
   async getAllUsers(): Promise<User[]> {
     return this.usersService.findAll();
   }

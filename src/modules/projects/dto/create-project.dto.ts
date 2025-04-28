@@ -7,6 +7,7 @@ import {
   IsUrl,
 } from 'class-validator';
 import { ProjectStatus } from '../enums/project-status.enum';
+import { Transform } from 'class-transformer';
 
 export class CreateProjectDto {
   @IsDefined()
@@ -29,6 +30,7 @@ export class CreateProjectDto {
   @IsNotEmpty()
   description: string;
 
+  @Transform(({ value }: { value: string }) => value || undefined)
   @IsOptional()
   @IsUrl()
   github?: string;

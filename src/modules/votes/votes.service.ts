@@ -25,7 +25,7 @@ export class VotesService extends RepositoryService<Vote> {
     userId: string;
     projectId: string;
   }): Promise<Vote> {
-    const project = await this.projectsService.findOne(params.projectId);
+    const project = await this.projectsService.findById(params.projectId);
     if (!project) {
       throw new NotFoundException(
         `Project with id ${params.projectId} not found`,
