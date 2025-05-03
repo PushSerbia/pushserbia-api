@@ -2,6 +2,7 @@ import { NestFactory, Reflector } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { ClassSerializerInterceptor, ValidationPipe } from '@nestjs/common';
 import { ExceptionsFilter } from './core/filters/exceptions.filter';
+import * as cookieParser from 'cookie-parser';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -22,7 +23,9 @@ async function bootstrap() {
       'https://staging.pushserbia.com',
     ],
     preflightContinue: false,
+    credentials: true,
   });
+  app.use(cookieParser());
   app.useGlobalFilters(new ExceptionsFilter());
   app.useGlobalInterceptors(new ClassSerializerInterceptor(app.get(Reflector)));
 
