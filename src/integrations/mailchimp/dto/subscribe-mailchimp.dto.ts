@@ -14,7 +14,7 @@ export class SubscribeMailchimpDto {
 
   @IsDefined()
   @IsNotEmpty()
-  @IsIn(['coming-soon', 'newsletter'], { message: 'Invalid tag' })
+  @IsIn(['coming-soon', 'newsletter', 'payment'], { message: 'Invalid tag' })
   tags: string;
 
   @IsOptional()
