@@ -75,6 +75,7 @@ export class AppModule implements NestModule {
       .apply(AuthMiddleware)
       .exclude(
         { path: '', method: RequestMethod.ALL },
+        { path: '/auth/set-token-to-cookie', method: RequestMethod.ALL },
         { path: '/integrations/subscribe', method: RequestMethod.POST },
         { path: '/auth/redirect/linkedin', method: RequestMethod.GET },
         { path: '/projects', method: RequestMethod.GET },
