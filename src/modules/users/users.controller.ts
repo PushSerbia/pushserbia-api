@@ -97,12 +97,8 @@ export class UsersController {
   async updateMe(
     @Body()
     payload: UpdateMeDto,
-    @GetUser() user?: CurrentUser,
+    @GetUser() user: CurrentUser,
   ): Promise<User | null> {
-    if (!user?.id) {
-      throw new HttpException('User not found', HttpStatus.NOT_FOUND);
-    }
-
     return await this.usersService.update(user.id, payload);
   }
 
