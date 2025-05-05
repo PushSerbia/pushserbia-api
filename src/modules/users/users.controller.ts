@@ -18,6 +18,7 @@ import { GetUser } from '../../core/decorators/get-user.decorator';
 import { CreateUserDto } from './dto/create-user.dto';
 import { CurrentUser } from '../auth/entities/current.user.entity';
 import { FirebaseAuthService } from '../auth/services/firebase-auth.service';
+import { UpdateMeDto } from './dto/update-me.dto';
 
 @Controller('users')
 export class UsersController {
@@ -89,7 +90,7 @@ export class UsersController {
   @Patch('me')
   async updateMe(
     @Body()
-    payload: Pick<UpdateUserDto, 'fullName' | 'gitHubUrl' | 'linkedInUrl'>,
+    payload: UpdateMeDto,
     @GetUser() user?: CurrentUser,
   ): Promise<User> {
     if (!user?.id) {
