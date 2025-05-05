@@ -98,7 +98,7 @@ export class UsersController {
     @Body()
     payload: UpdateMeDto,
     @GetUser() user?: CurrentUser,
-  ): Promise<User> {
+  ): Promise<User | null> {
     if (!user?.id) {
       throw new HttpException('User not found', HttpStatus.NOT_FOUND);
     }
