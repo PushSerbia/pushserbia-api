@@ -53,6 +53,7 @@ export class FirebaseAuthService {
         email: decodedToken.email,
         uid: decodedToken.uid,
         name: decodedToken.name,
+        imageUrl: decodedToken.picture,
         role: decodedToken.app_user_role,
       };
     } catch {

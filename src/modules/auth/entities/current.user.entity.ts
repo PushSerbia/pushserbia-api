@@ -5,5 +5,6 @@ export interface CurrentUser {
   email: string;
   uid: string;
   name: string;
+  imageUrl: string | undefined;
   role: UserRole;
 }

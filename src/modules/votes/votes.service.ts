@@ -5,22 +5,27 @@ import {
 } from '@nestjs/common';
 import { ProjectsService } from '../projects/projects.service';
 import { Vote } from './entities/vote.entity';
-import { VoteRepositoryService } from './votes.repository';
 import { UsersService } from '../users/users.service';
+import { RepositoryService } from '../../core/repository/repository.service';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
 
 @Injectable()
-export class VotesService {
+export class VotesService extends RepositoryService<Vote> {
   constructor(
-    private readonly voteRepositoryService: VoteRepositoryService,
+    @InjectRepository(Vote)
+    protected readonly repository: Repository<Vote>,
     private readonly projectsService: ProjectsService,
     private readonly usersService: UsersService,
-  ) {}
+  ) {
+    super();
+  }
 
   async voteForProject(params: {
     userId: string;
     projectId: string;
   }): Promise<Vote> {
-    const project = await this.projectsService.findOne(params.projectId);
+    const project = await this.projectsService.findById(params.projectId);
     if (!project) {
       throw new NotFoundException(
         `Project with id ${params.projectId} not found`,
@@ -29,7 +34,7 @@ export class VotesService {
     if (project.isBanned) {
       throw new ConflictException('Cannot vote for a banned project');
     }
-    const existingVote = await this.voteRepositoryService.findOneBy(params);
+    const existingVote = await this.repository.findOneBy(params);
     if (existingVote) {
       throw new ConflictException('User has already voted for this project');
     }
@@ -38,17 +43,6 @@ export class VotesService {
       throw new NotFoundException(`User not found`);
     }
     const voteData = { ...params, weight: userData.level };
-    return this.voteRepositoryService.create(voteData);
-  }
-
-  async getProjectVoteCount(projectId: number): Promise<number> {
-    const votes = await this.voteRepositoryService.findAll({
-      where: { project: { id: projectId } },
-    });
-    return votes.reduce((sum, vote) => sum + vote.weight, 0);
-  }
-
-  fetchAll(params: object) {
-    return this.voteRepositoryService.findAll(params);
+    return this.create(voteData);
   }
 }
