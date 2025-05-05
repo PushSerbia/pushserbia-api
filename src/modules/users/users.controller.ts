@@ -19,6 +19,7 @@ import { GetUser } from '../../core/decorators/get-user.decorator';
 import { CreateUserDto } from './dto/create-user.dto';
 import { CurrentUser } from '../auth/entities/current.user.entity';
 import { FirebaseAuthService } from '../auth/services/firebase-auth.service';
+import { UpdateMeDto } from './dto/update-me.dto';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { UserRole } from './enums/user-role';
 import { RolesGuard } from '../auth/guards/roles.guard';
@@ -90,6 +91,15 @@ export class UsersController {
       throw new HttpException('User not linked', HttpStatus.NOT_FOUND);
     }
     return me;
+  }
+
+  @Patch('me')
+  async updateMe(
+    @Body()
+    payload: UpdateMeDto,
+    @GetUser() user: CurrentUser,
+  ): Promise<User | null> {
+    return await this.usersService.update(user.id, payload);
   }
 
   @Post(':id/block')

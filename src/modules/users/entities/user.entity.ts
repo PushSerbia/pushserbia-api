@@ -27,6 +27,12 @@ export class User {
   @Column({ nullable: true })
   imageUrl: string;
 
+  @Column({ nullable: true})
+  linkedInUrl: string;
+
+  @Column({ nullable: true})
+  gitHubUrl: string;
+
   @Expose({ groups: ['me'] })
   @Column({ default: 1 })
   level: number;

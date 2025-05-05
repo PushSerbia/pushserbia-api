@@ -10,6 +10,14 @@ export class UpdateUserDto {
   fullName?: string;
 
   @IsOptional()
+  @IsString()
+  linkedInUrl?: string;
+
+  @IsOptional()
+  @IsString()
+  gitHubUrl?: string;
+
+  @IsOptional()
   @IsNumber()
   level?: number;
 }
