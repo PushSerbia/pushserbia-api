@@ -1,6 +1,7 @@
 import { registerAs } from '@nestjs/config';
 
 export interface AuthConfig {
+  isSecureCookie: boolean;
   callbackUrls: string;
   productionLoginPage: string;
   loginPage: string;
@@ -8,6 +9,7 @@ export interface AuthConfig {
 }
 
 export default registerAs<AuthConfig>('auth', () => ({
+  isSecureCookie: process.env.AUTH_SECURE_COOKIE === 'true',
   callbackUrls: process.env.AUTH_CALLBACK_URLS || '',
   productionLoginPage: process.env.AUTH_PRODUCTION_LOGIN_PAGE || '',
   loginPage: process.env.AUTH_LOGIN_PAGE_URL || '',
