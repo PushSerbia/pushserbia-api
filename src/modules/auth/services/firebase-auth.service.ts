@@ -34,16 +34,7 @@ export class FirebaseAuthService {
     return this.admin;
   }
 
-  private getTokenFromHeader(authToken: string): string {
-    const match = authToken.match(/^Bearer (.*)$/);
-    if (!match || match.length < 2) {
-      throw new UnauthorizedException('Invalid token');
-    }
-    return match[1];
-  }
-
-  async authenticate(authHeader: string): Promise<CurrentUser> {
-    const token = this.getTokenFromHeader(authHeader);
+  async authenticate(token: string): Promise<CurrentUser> {
     try {
       const decodedToken = (await this.getAdmin()
         .auth()
