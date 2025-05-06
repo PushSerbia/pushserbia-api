@@ -38,7 +38,7 @@ export class AuthController {
         res.cookie('__auth', token, {
           maxAge: 24 * 60 * 60 * 1000, // 1 dana
           httpOnly: true,
-          secure: req.secure,
+          secure: this.authService.getConfig().isSecureCookie,
           sameSite: 'lax',
         });
       } else {
