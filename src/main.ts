@@ -21,6 +21,7 @@ async function bootstrap() {
       'http://localhost:4200',
       'https://pushserbia.com',
       'https://staging.pushserbia.com',
+      /^https:\/\/.*\.vercel\.app$/,
     ],
     preflightContinue: false,
     credentials: true,
