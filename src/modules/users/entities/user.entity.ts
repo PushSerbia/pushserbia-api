@@ -27,10 +27,10 @@ export class User {
   @Column({ nullable: true })
   imageUrl: string;
 
-  @Column({ nullable: true})
+  @Column({ nullable: true })
   linkedInUrl: string;
 
-  @Column({ nullable: true})
+  @Column({ nullable: true })
   gitHubUrl: string;
 
   @Expose({ groups: ['me'] })

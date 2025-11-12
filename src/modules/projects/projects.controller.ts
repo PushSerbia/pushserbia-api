@@ -22,6 +22,8 @@ import { ProjectStatus } from './enums/project-status.enum';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { UserRole } from '../users/enums/user-role';
 import { RolesGuard } from '../auth/guards/roles.guard';
+import { ProjectLanguage } from './enums/project-language.enum';
+import { Project } from './entities/project.entity';
 
 @Controller('projects')
 export class ProjectsController {
@@ -51,22 +53,31 @@ export class ProjectsController {
   @Get()
   findAll(
     @Query('slug') slug: string,
+    @Query('language') language?: ProjectLanguage,
     @Query('page') page?: number,
     @Query('pageSize') pageSize?: number,
   ) {
+    const filter: Partial<Project> = {};
+    if (slug) {
+      filter.slug = slug;
+    }
+    if (language) {
+      filter.language = language;
+    }
     if (page !== undefined || pageSize !== undefined) {
       const _pageSize = pageSize ? Number(pageSize) : DEFAULT_PAGE_SIZE;
       const _page =
         page && Number(page) > 0 ? Number(page) : DEFAULT_PAGE_NUMBER;
       const offset = (_page - 1) * _pageSize;
-
       return this.projectsService.findAllOffset(
-        slug ? { slug } : undefined,
+        Object.keys(filter).length ? filter : undefined,
         _pageSize,
         offset,
       );
     }
-    return this.projectsService.findAll(slug ? { slug } : undefined);
+    return this.projectsService.findAll(
+      Object.keys(filter).length ? filter : undefined,
+    );
   }
 
   @Get(':id')

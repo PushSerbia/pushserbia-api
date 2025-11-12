@@ -9,6 +9,7 @@ import {
 } from 'typeorm';
 import { ProjectStatus } from '../enums/project-status.enum';
 import { User } from '../../users/entities/user.entity';
+import { ProjectLanguage } from '../enums/project-language.enum';
 
 @Entity()
 export class Project {
@@ -61,4 +62,11 @@ export class Project {
 
   @UpdateDateColumn()
   updatedAt: Date;
+
+  @Column({
+    type: 'enum',
+    enum: ProjectLanguage,
+    default: ProjectLanguage.Serbian,
+  })
+  language: ProjectLanguage;
 }

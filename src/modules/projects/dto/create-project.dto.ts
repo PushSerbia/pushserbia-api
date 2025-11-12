@@ -8,6 +8,7 @@ import {
 } from 'class-validator';
 import { ProjectStatus } from '../enums/project-status.enum';
 import { Transform } from 'class-transformer';
+import { ProjectLanguage } from '../enums/project-language.enum';
 
 export class CreateProjectDto {
   @IsDefined()
@@ -38,4 +39,8 @@ export class CreateProjectDto {
   @IsOptional()
   @IsEnum(ProjectStatus)
   status?: ProjectStatus;
+
+  @IsOptional()
+  @IsEnum(ProjectLanguage)
+  language?: ProjectLanguage;
 }
