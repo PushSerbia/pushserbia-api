@@ -16,6 +16,13 @@ export class Project {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
+  @Column({
+    type: 'enum',
+    enum: ProjectLanguage,
+    default: ProjectLanguage.Serbian,
+  })
+  language: ProjectLanguage;
+
   @Column()
   name: string;
 
@@ -62,11 +69,4 @@ export class Project {
 
   @UpdateDateColumn()
   updatedAt: Date;
-
-  @Column({
-    type: 'enum',
-    enum: ProjectLanguage,
-    default: ProjectLanguage.Serbian,
-  })
-  language: ProjectLanguage;
 }

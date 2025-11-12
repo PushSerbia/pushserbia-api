@@ -11,6 +11,10 @@ import { Transform } from 'class-transformer';
 import { ProjectLanguage } from '../enums/project-language.enum';
 
 export class CreateProjectDto {
+  @IsOptional()
+  @IsEnum(ProjectLanguage)
+  language?: ProjectLanguage;
+
   @IsDefined()
   @IsString()
   @IsNotEmpty()
@@ -39,8 +43,4 @@ export class CreateProjectDto {
   @IsOptional()
   @IsEnum(ProjectStatus)
   status?: ProjectStatus;
-
-  @IsOptional()
-  @IsEnum(ProjectLanguage)
-  language?: ProjectLanguage;
 }
