@@ -6,6 +6,7 @@ import { UsersController } from './users.controller';
 import { AuthModule } from '../auth/auth.module';
 import { UserProposedProjectProcessor } from './processors/user-proposed-project.processor';
 import { UserSupportedProjectProcessor } from './processors/user-supported-project.processor';
+import { UsersGravatarBackfill } from './hooks/user-gravatar-backfill';
 
 @Module({
   imports: [TypeOrmModule.forFeature([User]), AuthModule],
@@ -13,6 +14,7 @@ import { UserSupportedProjectProcessor } from './processors/user-supported-proje
     UsersService,
     UserProposedProjectProcessor,
     UserSupportedProjectProcessor,
+    UsersGravatarBackfill,
   ],
   controllers: [UsersController],
   exports: [UsersService],
