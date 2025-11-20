@@ -23,6 +23,7 @@ import authConfig from './core/config/auth.config';
 import redisConfig from './core/config/redis.config';
 import { BullModule } from '@nestjs/bullmq';
 import { QueueOptions } from 'bullmq';
+import { UnsplashModule } from './modules/unsplash/unsplash.module';
 
 @Module({
   imports: [
@@ -60,6 +61,7 @@ import { QueueOptions } from 'bullmq';
     UsersModule,
     ProjectsModule,
     VotesModule,
+    UnsplashModule,
   ],
   controllers: [AppController],
   providers: [AppService],

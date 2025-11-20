@@ -35,6 +35,11 @@ export class CreateProjectDto {
   @IsUrl()
   github?: string;
 
+  @Transform(({ value }: { value: string }) => value || undefined)
+  @IsOptional()
+  @IsUrl()
+  image?: string;
+
   @IsOptional()
   @IsEnum(ProjectStatus)
   status?: ProjectStatus;
