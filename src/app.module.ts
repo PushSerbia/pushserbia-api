@@ -23,6 +23,7 @@ import authConfig from './core/config/auth.config';
 import redisConfig from './core/config/redis.config';
 import { BullModule } from '@nestjs/bullmq';
 import { QueueOptions } from 'bullmq';
+import { UnsplashModule } from './modules/unsplash/unsplash.module';
 
 @Module({
   imports: [
@@ -39,7 +40,10 @@ import { QueueOptions } from 'bullmq';
     TypeOrmModule.forRoot({
       type: 'postgres',
       url: process.env.DATABASE_URL,
-      ssl: { rejectUnauthorized: false },
+      ssl:
+        process.env.DATABASE_SSL === 'true'
+          ? { rejectUnauthorized: false }
+          : false,
       autoLoadEntities: true,
       synchronize: true,
     }),
@@ -60,6 +64,7 @@ import { QueueOptions } from 'bullmq';
     UsersModule,
     ProjectsModule,
     VotesModule,
+    UnsplashModule,
   ],
   controllers: [AppController],
   providers: [AppService],

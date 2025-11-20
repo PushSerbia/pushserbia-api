@@ -51,6 +51,9 @@ export class Project {
   @Column({ nullable: true })
   github: string;
 
+  @Column({ nullable: true })
+  image: string;
+
   @Column({ default: false })
   isBanned: boolean;
 

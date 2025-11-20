@@ -1,4 +1,6 @@
 import {
+  BeforeInsert,
+  BeforeUpdate,
   Column,
   CreateDateColumn,
   Entity,
@@ -7,6 +9,7 @@ import {
 } from 'typeorm';
 import { UserRole } from '../enums/user-role';
 import { Exclude, Expose } from 'class-transformer';
+import { createHash } from 'crypto';
 
 @Entity()
 export class User {
@@ -20,6 +23,13 @@ export class User {
   @Expose({ groups: ['me'] })
   @Column({ unique: true })
   email: string;
+
+  @Column({
+    type: 'char',
+    length: 32, // md5 hex digest length
+    nullable: true,
+  })
+  gravatar: string | null;
 
   @Column()
   fullName: string;
@@ -68,4 +78,22 @@ export class User {
   @Expose({ groups: ['me'] })
   @UpdateDateColumn()
   updatedAt: Date;
+
+  private static md5(input: string): string {
+    return createHash('md5').update(input).digest('hex');
+  }
+
+  private static normalizeEmail(email?: string): string | null {
+    if (!email) return null;
+    return email.trim().toLowerCase();
+  }
+
+  @BeforeInsert()
+  @BeforeUpdate()
+  setGravatarHash() {
+    const normalized = User.normalizeEmail(this.email);
+    if (normalized) {
+      this.gravatar = User.md5(normalized);
+    }
+  }
 }
