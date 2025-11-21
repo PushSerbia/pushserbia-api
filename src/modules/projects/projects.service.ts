@@ -17,6 +17,7 @@ export class ProjectsService extends RepositoryService<Project> {
   async findAll(options?: Partial<Project>): Promise<Project[]> {
     return this.repository.find({
       where: { ...options, isBanned: false },
+      order: { createdAt: 'DESC' },
       relations: ['creator'],
     });
   }
@@ -42,7 +43,7 @@ export class ProjectsService extends RepositoryService<Project> {
 
     const queryOptions: any = {
       where: { ...options, isBanned: false },
-      order: { id: 'ASC' },
+      order: { createdAt: 'DESC' },
       take: limit,
       skip: offset,
       relations: ['creator'],
@@ -52,6 +53,7 @@ export class ProjectsService extends RepositoryService<Project> {
     const total = await this.repository.count({
       where: { ...options, isBanned: false },
     });
+    console.log(data);
 
     const totalPages = total > 0 ? Math.ceil(total / limit) : 0;
     const currentPage = total > 0 ? Math.floor(offset / limit) + 1 : 0;
