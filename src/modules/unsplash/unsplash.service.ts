@@ -32,29 +32,6 @@ export class UnsplashService {
     }
   }
 
-  async randomPhoto(params?: {
-    query?: string;
-    orientation?: 'landscape' | 'portrait' | 'squarish';
-  }) {
-    try {
-      const res = await firstValueFrom(
-        this.http.get<Photo[]>('/photos/random', { params }),
-      );
-      return { ...res.data, rateLimit: this.pickRate(res.headers) };
-    } catch (error: unknown) {
-      this.handleAxiosError(error);
-    }
-  }
-
-  async photoById(id: string) {
-    try {
-      const res = await firstValueFrom(this.http.get<Photo>(`/photos/${id}`));
-      return { ...res.data, rateLimit: this.pickRate(res.headers) };
-    } catch (e) {
-      this.handleAxiosError(e);
-    }
-  }
-
   private pickRate(headers: RawAxiosResponseHeaders | AxiosResponseHeaders) {
     return {
       limit: String(headers['x-ratelimit-limit'] ?? ''),
