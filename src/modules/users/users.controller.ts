@@ -6,7 +6,6 @@ import {
   HttpException,
   HttpStatus,
   Param,
-  ParseIntPipe,
   Patch,
   Post,
   SerializeOptions,
@@ -57,7 +56,6 @@ export class UsersController {
         app_user_active: !existingUser.isBlocked,
       });
       return this.usersService.update(existingUser.id, {
-        ...existingUser,
         ...createUserDto,
         firebaseUid: user.uid,
       });
@@ -104,14 +102,14 @@ export class UsersController {
 
   @Post(':id/block')
   @Roles([UserRole.Admin])
-  async blockUser(@Param('id', ParseIntPipe) id: string) {
+  async blockUser(@Param('id') id: string) {
     return this.usersService.update(id, { isBlocked: true });
   }
 
   @Patch(':id')
   @Roles([UserRole.Admin])
   async updateUser(
-    @Param('id', ParseIntPipe) id: string,
+    @Param('id') id: string,
     @Body() updateUserDto: UpdateUserDto,
   ) {
     return this.usersService.update(id, updateUserDto);
@@ -119,7 +117,7 @@ export class UsersController {
 
   @Delete(':id')
   @Roles([UserRole.Admin])
-  async deleteUser(@Param('id', ParseIntPipe) id: string): Promise<void> {
+  async deleteUser(@Param('id') id: string): Promise<void> {
     return this.usersService.remove(id);
   }
 

@@ -5,19 +5,11 @@ import {
   InsertEvent,
 } from 'typeorm';
 import { Project } from '../entities/project.entity';
-import { InjectQueue } from '@nestjs/bullmq';
-import { Queue } from 'bullmq';
-import {
-  USER_PROPOSED_PROJECT_EVENT,
-  UserProposedProjectEvent,
-} from '../../users/processors/user-proposed-project.processor';
+import { User } from '../../users/entities/user.entity';
 
 @EventSubscriber()
 export class ProjectSubscriber implements EntitySubscriberInterface<Project> {
-  constructor(
-    dataSource: DataSource,
-    @InjectQueue(USER_PROPOSED_PROJECT_EVENT) private eventQueue: Queue,
-  ) {
+  constructor(dataSource: DataSource) {
     dataSource.subscribers.push(this);
   }
 
@@ -26,9 +18,8 @@ export class ProjectSubscriber implements EntitySubscriberInterface<Project> {
   }
 
   async afterInsert(event: InsertEvent<Project>) {
-    const data: UserProposedProjectEvent = {
-      userId: event.entity.creatorId,
-    };
-    await this.eventQueue.add(USER_PROPOSED_PROJECT_EVENT, data);
+    await event.manager
+      .getRepository(User)
+      .increment({ id: event.entity.creatorId }, 'projectsProposed', 1);
   }
 }

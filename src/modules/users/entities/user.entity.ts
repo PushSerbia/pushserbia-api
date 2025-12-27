@@ -9,7 +9,7 @@ import {
 } from 'typeorm';
 import { UserRole } from '../enums/user-role';
 import { Exclude, Expose } from 'class-transformer';
-import { createHash } from 'crypto';
+import { generateGravatar } from '../../../core/utils/generate-gravatar';
 
 @Entity()
 export class User {
@@ -79,21 +79,9 @@ export class User {
   @UpdateDateColumn()
   updatedAt: Date;
 
-  private static md5(input: string): string {
-    return createHash('md5').update(input).digest('hex');
-  }
-
-  private static normalizeEmail(email?: string): string | null {
-    if (!email) return null;
-    return email.trim().toLowerCase();
-  }
-
   @BeforeInsert()
   @BeforeUpdate()
   setGravatarHash() {
-    const normalized = User.normalizeEmail(this.email);
-    if (normalized) {
-      this.gravatar = User.md5(normalized);
-    }
+    this.gravatar = generateGravatar(this.email);
   }
 }

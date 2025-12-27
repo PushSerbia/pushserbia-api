@@ -2,26 +2,31 @@ import {
   Column,
   CreateDateColumn,
   Entity,
+  Index,
   ManyToOne,
   PrimaryGeneratedColumn,
+  Unique,
 } from 'typeorm';
 import { User } from '../../users/entities/user.entity';
 import { Project } from '../../projects/entities/project.entity';
 import { Exclude } from 'class-transformer';
 
 @Entity()
+@Unique(['userId', 'projectId'])
 export class Vote {
   @Exclude()
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @Column({ type: 'string' })
+  @Index()
+  @Column({ type: 'uuid' })
   userId: string;
 
   @ManyToOne(() => User)
   user: User;
 
-  @Column({ type: 'string' })
+  @Index()
+  @Column({ type: 'uuid' })
   projectId: string;
 
   @ManyToOne(() => Project)

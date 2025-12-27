@@ -1,6 +1,7 @@
 import { DeepPartial, FindOptionsWhere, Repository } from 'typeorm';
 import { QueryDeepPartialEntity } from 'typeorm/query-builder/QueryPartialEntity';
-import { HttpException, HttpStatus } from '@nestjs/common';
+import { BadRequestException, HttpException, HttpStatus } from '@nestjs/common';
+import { DEFAULT_PAGE_SIZE } from '../constants/constants';
 
 export abstract class RepositoryService<T extends { id: string }> {
   protected abstract repository: Repository<T>;
@@ -11,6 +12,44 @@ export abstract class RepositoryService<T extends { id: string }> {
 
   async findAll(options?: any): Promise<T[]> {
     return this.repository.find(options);
+  }
+
+  async findAllOffset(
+    options?: any,
+    limit: number = DEFAULT_PAGE_SIZE,
+    offset: number = 0,
+  ): Promise<{
+    data: T[];
+    total: number;
+    limit: number;
+    offset: number;
+    currentPage: number;
+    totalPages: number;
+  }> {
+    if (limit < 1) {
+      throw new BadRequestException('Limit must be at least 1');
+    }
+    if (offset < 0) {
+      throw new BadRequestException('Offset must be non-negative');
+    }
+
+    const [data, total] = await this.repository.findAndCount({
+      ...options,
+      take: limit,
+      skip: offset,
+    });
+
+    const totalPages = total > 0 ? Math.ceil(total / limit) : 0;
+    const currentPage = total > 0 ? Math.floor(offset / limit) + 1 : 0;
+
+    return {
+      data,
+      total,
+      limit,
+      offset,
+      currentPage,
+      totalPages,
+    };
   }
 
   findById(id: string) {

@@ -5,12 +5,11 @@ import { VotesService } from './votes.service';
 import { VotesController } from './votes.controller';
 import { ProjectsModule } from '../projects/projects.module';
 import { UsersModule } from '../users/users.module';
-import { VoteSubscriber } from './subscribers/vote.subscriber';
 
 @Module({
   imports: [TypeOrmModule.forFeature([Vote]), ProjectsModule, UsersModule],
   controllers: [VotesController],
-  providers: [VotesService, VoteSubscriber],
+  providers: [VotesService],
   exports: [VotesService],
 })
 export class VotesModule {}
