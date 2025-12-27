@@ -3,20 +3,18 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { ProjectsService } from '../projects/projects.service';
 import { Vote } from './entities/vote.entity';
-import { UsersService } from '../users/users.service';
 import { RepositoryService } from '../../core/repository/repository.service';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
+import { Project } from '../projects/entities/project.entity';
+import { User } from '../users/entities/user.entity';
 
 @Injectable()
 export class VotesService extends RepositoryService<Vote> {
   constructor(
     @InjectRepository(Vote)
     protected readonly repository: Repository<Vote>,
-    private readonly projectsService: ProjectsService,
-    private readonly usersService: UsersService,
   ) {
     super();
   }
@@ -25,24 +23,70 @@ export class VotesService extends RepositoryService<Vote> {
     userId: string;
     projectId: string;
   }): Promise<Vote> {
-    const project = await this.projectsService.findById(params.projectId);
-    if (!project) {
-      throw new NotFoundException(
-        `Project with id ${params.projectId} not found`,
-      );
-    }
-    if (project.isBanned) {
-      throw new ConflictException('Cannot vote for a banned project');
-    }
-    const existingVote = await this.repository.findOneBy(params);
-    if (existingVote) {
-      throw new ConflictException('User has already voted for this project');
-    }
-    const userData = await this.usersService.findOneBy({ id: params.userId });
-    if (!userData) {
-      throw new NotFoundException(`User not found`);
-    }
-    const voteData = { ...params, weight: userData.level };
-    return this.create(voteData);
+    return await this.repository.manager.transaction(async (manager) => {
+      const [user, project] = await Promise.all([
+        manager.findOne(User, {
+          where: { id: params.userId },
+          select: ['id', 'level', 'isBlocked'],
+        }),
+        manager.findOne(Project, {
+          where: { id: params.projectId },
+          select: ['id', 'isBanned'],
+        }),
+      ]);
+
+      if (!user) {
+        throw new NotFoundException(`User not found`);
+      }
+      if (user.isBlocked) {
+        throw new ConflictException('User is blocked');
+      }
+
+      if (!project) {
+        throw new NotFoundException(
+          `Project with id ${params.projectId} not found`,
+        );
+      }
+      if (project.isBanned) {
+        throw new ConflictException('Cannot vote for a banned project');
+      }
+
+      const vote = manager.create(Vote, {
+        userId: params.userId,
+        projectId: params.projectId,
+        weight: user.level,
+      });
+
+      try {
+        const savedVote = await manager.save(vote);
+
+        await manager
+          .createQueryBuilder()
+          .update(Project)
+          .set({
+            totalVotes: () => `totalVotes + ${user.level}`,
+            totalVoters: () => `totalVoters + 1`,
+          })
+          .where('id = :id', { id: params.projectId })
+          .execute();
+
+        await manager.increment(
+          User,
+          { id: params.userId },
+          'projectsSupported',
+          1,
+        );
+
+        return savedVote;
+      } catch (error) {
+        // Handle unique constraint violation (Postgres error code 23505)
+        if (error.code === '23505') {
+          throw new ConflictException(
+            'User has already voted for this project',
+          );
+        }
+        throw error;
+      }
+    });
   }
 }
