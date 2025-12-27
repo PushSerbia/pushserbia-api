@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { Project } from './entities/project.entity';
 import { DEFAULT_PAGE_SIZE } from '../../core/constants/constants';
 import { RepositoryService } from '../../core/repository/repository.service';
@@ -18,7 +18,22 @@ export class ProjectsService extends RepositoryService<Project> {
     return this.repository.find({
       where: { ...options, isBanned: false },
       order: { createdAt: 'DESC' },
-      relations: ['creator'],
+      relations: { creator: true },
+      select: {
+        id: true,
+        name: true,
+        slug: true,
+        shortDescription: true,
+        totalVotes: true,
+        totalVoters: true,
+        image: true,
+        createdAt: true,
+        creator: {
+          id: true,
+          fullName: true,
+          imageUrl: true,
+        },
+      },
     });
   }
 
@@ -34,49 +49,57 @@ export class ProjectsService extends RepositoryService<Project> {
     currentPage: number;
     totalPages: number;
   }> {
-    if (limit < 1) {
-      throw new BadRequestException('Limit must be at least 1');
-    }
-    if (offset < 0) {
-      throw new BadRequestException('Offset must be non-negative');
-    }
-
-    const queryOptions: any = {
-      where: { ...options, isBanned: false },
-      order: { createdAt: 'DESC' },
-      take: limit,
-      skip: offset,
-      relations: ['creator'],
-    };
-
-    const data = await this.repository.find(queryOptions);
-    const total = await this.repository.count({
-      where: { ...options, isBanned: false },
-    });
-    console.log(data);
-
-    const totalPages = total > 0 ? Math.ceil(total / limit) : 0;
-    const currentPage = total > 0 ? Math.floor(offset / limit) + 1 : 0;
-
-    return {
-      data,
-      total,
+    return super.findAllOffset(
+      {
+        where: { ...options, isBanned: false },
+        order: { createdAt: 'DESC' },
+        relations: { creator: true },
+        select: {
+          id: true,
+          name: true,
+          slug: true,
+          shortDescription: true,
+          description: true,
+          totalVotes: true,
+          totalVoters: true,
+          image: true,
+          createdAt: true,
+          status: true,
+          creator: {
+            id: true,
+            fullName: true,
+            gravatar: true,
+          },
+        },
+      },
       limit,
       offset,
-      currentPage,
-      totalPages,
-    };
+    );
   }
 
-  incrementVotes(id: string, voteWeight: number) {
-    return this.repository
-      .createQueryBuilder()
-      .update()
-      .set({
-        totalVotes: () => 'totalVotes + :voteWeight',
-        totalVoters: () => 'totalVoters + 1',
-      })
-      .where('id = :id', { id, voteWeight })
-      .execute();
+  findById(id: string) {
+    return this.repository.findOne({
+      where: { id, isBanned: false },
+      relations: { creator: true },
+      select: {
+        id: true,
+        name: true,
+        slug: true,
+        shortDescription: true,
+        description: true,
+        status: true,
+        totalVotes: true,
+        totalVoters: true,
+        github: true,
+        image: true,
+        createdAt: true,
+        updatedAt: true,
+        creator: {
+          id: true,
+          fullName: true,
+          imageUrl: true,
+        },
+      },
+    });
   }
 }

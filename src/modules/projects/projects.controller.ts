@@ -22,6 +22,7 @@ import { ProjectStatus } from './enums/project-status.enum';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { UserRole } from '../users/enums/user-role';
 import { RolesGuard } from '../auth/guards/roles.guard';
+import { generateGravatar } from '../../core/utils/generate-gravatar';
 
 @Controller('projects')
 export class ProjectsController {
@@ -43,7 +44,7 @@ export class ProjectsController {
       creator: {
         id: creator.id,
         fullName: creator.name,
-        imageUrl: creator.imageUrl,
+        gravatar: generateGravatar(creator.email),
       },
     };
   }
@@ -54,19 +55,15 @@ export class ProjectsController {
     @Query('page') page?: number,
     @Query('pageSize') pageSize?: number,
   ) {
-    if (page !== undefined || pageSize !== undefined) {
-      const _pageSize = pageSize ? Number(pageSize) : DEFAULT_PAGE_SIZE;
-      const _page =
-        page && Number(page) > 0 ? Number(page) : DEFAULT_PAGE_NUMBER;
-      const offset = (_page - 1) * _pageSize;
+    const _pageSize = pageSize ? Number(pageSize) : DEFAULT_PAGE_SIZE;
+    const _page = page && Number(page) > 0 ? Number(page) : DEFAULT_PAGE_NUMBER;
+    const offset = (_page - 1) * _pageSize;
 
-      return this.projectsService.findAllOffset(
-        slug ? { slug } : undefined,
-        _pageSize,
-        offset,
-      );
-    }
-    return this.projectsService.findAll(slug ? { slug } : undefined);
+    return this.projectsService.findAllOffset(
+      slug ? { slug } : undefined,
+      _pageSize,
+      offset,
+    );
   }
 
   @Get(':id')
@@ -91,7 +88,7 @@ export class ProjectsController {
       creator: {
         id: user.id,
         fullName: user.name,
-        imageUrl: user.imageUrl,
+        gravatar: generateGravatar(user.email),
       },
     };
   }
