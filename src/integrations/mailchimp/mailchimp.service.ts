@@ -107,7 +107,6 @@ export class MailchimpService {
       console.error(
         'Mailchimp: Something went wrong during the creating subscriber.',
       );
-      console.log(e);
       if (e.statusCode === 400 && e.title === 'Member Exists') {
         // silently ignore when member already exists
         return;
