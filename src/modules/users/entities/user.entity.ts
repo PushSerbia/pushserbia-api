@@ -4,6 +4,7 @@ import {
   Column,
   CreateDateColumn,
   Entity,
+  Index,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
@@ -60,6 +61,7 @@ export class User {
   role: UserRole;
 
   @Expose({ groups: ['me'] })
+  @Index()
   @Column({ default: false })
   isBlocked: boolean;
 

@@ -16,6 +16,9 @@ export class CallbackPipe implements PipeTransform {
 
     const config = this.authService.getConfig();
 
-    return config.callbackUrls.includes(callbackUrl);
+    const allowedUrls = config.callbackUrls
+      .split(',')
+      .map((url) => url.trim());
+    return allowedUrls.includes(callbackUrl);
   }
 }

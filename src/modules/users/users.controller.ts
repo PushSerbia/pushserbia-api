@@ -9,6 +9,7 @@ import {
   ParseUUIDPipe,
   Patch,
   Post,
+  Query,
   SerializeOptions,
   UseGuards,
 } from '@nestjs/common';
@@ -23,6 +24,10 @@ import { UpdateMeDto } from './dto/update-me.dto';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { UserRole } from './enums/user-role';
 import { RolesGuard } from '../auth/guards/roles.guard';
+import {
+  DEFAULT_PAGE_NUMBER,
+  DEFAULT_PAGE_SIZE,
+} from '../../core/constants/constants';
 
 @Controller('users')
 @UseGuards(RolesGuard)
@@ -124,7 +129,15 @@ export class UsersController {
 
   @Get()
   @Roles([UserRole.Admin])
-  async getAllUsers(): Promise<User[]> {
-    return this.usersService.findAll();
+  async getAllUsers(
+    @Query('page') page?: number,
+    @Query('pageSize') pageSize?: number,
+  ) {
+    const _pageSize = pageSize ? Number(pageSize) : DEFAULT_PAGE_SIZE;
+    const _page =
+      page && Number(page) > 0 ? Number(page) : DEFAULT_PAGE_NUMBER;
+    const offset = (_page - 1) * _pageSize;
+
+    return this.usersService.findAllOffset(undefined, _pageSize, offset);
   }
 }
