@@ -13,7 +13,7 @@ async function bootstrap() {
       whitelist: true,
       forbidNonWhitelisted: true,
       forbidUnknownValues: true,
-      skipMissingProperties: true,
+      transform: true,
     }),
   );
 

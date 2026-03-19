@@ -6,6 +6,7 @@ import {
   HttpException,
   HttpStatus,
   Param,
+  ParseUUIDPipe,
   Patch,
   Post,
   SerializeOptions,
@@ -33,8 +34,8 @@ export class UsersController {
 
   @Post()
   @Roles([UserRole.Admin])
-  async create(@Body() userData: Partial<User>): Promise<User> {
-    return this.usersService.create(userData);
+  async create(@Body() createUserDto: CreateUserDto): Promise<User> {
+    return this.usersService.create(createUserDto);
   }
 
   @Post('account')
@@ -102,14 +103,14 @@ export class UsersController {
 
   @Post(':id/block')
   @Roles([UserRole.Admin])
-  async blockUser(@Param('id') id: string) {
+  async blockUser(@Param('id', ParseUUIDPipe) id: string) {
     return this.usersService.update(id, { isBlocked: true });
   }
 
   @Patch(':id')
   @Roles([UserRole.Admin])
   async updateUser(
-    @Param('id') id: string,
+    @Param('id', ParseUUIDPipe) id: string,
     @Body() updateUserDto: UpdateUserDto,
   ) {
     return this.usersService.update(id, updateUserDto);
@@ -117,7 +118,7 @@ export class UsersController {
 
   @Delete(':id')
   @Roles([UserRole.Admin])
-  async deleteUser(@Param('id') id: string): Promise<void> {
+  async deleteUser(@Param('id', ParseUUIDPipe) id: string): Promise<void> {
     return this.usersService.remove(id);
   }
 

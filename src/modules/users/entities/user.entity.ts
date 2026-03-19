@@ -82,6 +82,8 @@ export class User {
   @BeforeInsert()
   @BeforeUpdate()
   setGravatarHash() {
-    this.gravatar = generateGravatar(this.email);
+    if (this.email) {
+      this.gravatar = generateGravatar(this.email);
+    }
   }
 }

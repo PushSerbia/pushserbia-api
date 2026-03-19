@@ -35,7 +35,7 @@ import { UnsplashModule } from './modules/unsplash/unsplash.module';
           ? { rejectUnauthorized: false }
           : false,
       autoLoadEntities: true,
-      synchronize: true,
+      synchronize: process.env.TYPEORM_SYNCHRONIZE === 'true',
     }),
     MailchimpModule,
     AuthModule,

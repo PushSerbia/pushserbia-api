@@ -20,8 +20,8 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
       inject: [ConfigService],
     }),
   ],
-  controllers: [UnsplashController, UnsplashController],
-  providers: [UnsplashService, UnsplashService],
+  controllers: [UnsplashController],
+  providers: [UnsplashService],
   exports: [UnsplashService],
 })
 export class UnsplashModule {}

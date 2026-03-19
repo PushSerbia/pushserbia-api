@@ -56,8 +56,8 @@ export class FirebaseAuthService {
     let user: UserRecord;
     try {
       user = await this.getAdmin().auth().getUserByEmail(data.email);
-    } catch (err) {
-      if (err.errorInfo.code !== 'auth/user-not-found') {
+    } catch (err: any) {
+      if (err?.errorInfo?.code !== 'auth/user-not-found') {
         throw new UnauthorizedException('Something went wrong');
       }
       user = await this.getAdmin().auth().createUser({

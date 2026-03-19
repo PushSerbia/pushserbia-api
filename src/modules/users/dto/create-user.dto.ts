@@ -4,12 +4,15 @@ import {
   IsNotEmpty,
   IsOptional,
   IsString,
+  IsUrl,
+  MaxLength,
 } from 'class-validator';
 
 export class CreateUserDto {
   @IsDefined()
   @IsNotEmpty()
   @IsString()
+  @MaxLength(200)
   fullName: string;
 
   @IsDefined()
@@ -19,6 +22,6 @@ export class CreateUserDto {
 
   @IsOptional()
   @IsNotEmpty()
-  @IsString()
-  imageUrl: string;
+  @IsUrl()
+  imageUrl?: string;
 }

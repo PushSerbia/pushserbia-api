@@ -64,10 +64,11 @@ export class VotesService extends RepositoryService<Vote> {
           .createQueryBuilder()
           .update(Project)
           .set({
-            totalVotes: () => `totalVotes + ${user.level}`,
-            totalVoters: () => `totalVoters + 1`,
+            totalVotes: () => `"totalVotes" + :weight`,
+            totalVoters: () => `"totalVoters" + 1`,
           })
           .where('id = :id', { id: params.projectId })
+          .setParameters({ weight: user.level })
           .execute();
 
         await manager.increment(
