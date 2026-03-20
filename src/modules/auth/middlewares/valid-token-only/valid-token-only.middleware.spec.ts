@@ -39,6 +39,7 @@ describe('ValidTokenOnlyMiddleware', () => {
       name: 'Test',
       imageUrl: undefined,
       role: UserRole.Participant,
+      active: true,
     };
     firebaseService.authenticate.mockResolvedValue(mockUser);
     const req = { cookies: { __auth: 'valid-token' } } as any;

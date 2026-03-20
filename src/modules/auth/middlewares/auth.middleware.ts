@@ -21,6 +21,13 @@ export class AuthMiddleware implements NestMiddleware {
         return res.status(HttpStatus.CONFLICT).json({ message: 'invalid id' });
       }
 
+      if (!user.active) {
+        this.logger.warn(`Blocked user ${user.id} attempted ${req.method} ${req.baseUrl}${req.path}`);
+        return res
+          .status(HttpStatus.FORBIDDEN)
+          .json({ message: 'account is blocked' });
+      }
+
       req['user'] = user;
 
       next();

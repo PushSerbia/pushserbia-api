@@ -40,6 +40,7 @@ describe('AuthMiddleware', () => {
       name: 'Test',
       imageUrl: undefined,
       role: UserRole.Participant,
+      active: true,
     };
     firebaseService.authenticate.mockResolvedValue(mockUser);
     mockRequest = { cookies: { __auth: 'valid-token' }, baseUrl: '/v1/users' };
@@ -58,6 +59,7 @@ describe('AuthMiddleware', () => {
       name: 'Test',
       imageUrl: undefined,
       role: UserRole.Participant,
+      active: true,
     };
     firebaseService.authenticate.mockResolvedValue(mockUser as any);
     mockRequest = {
@@ -79,6 +81,7 @@ describe('AuthMiddleware', () => {
       name: 'Test',
       imageUrl: undefined,
       role: UserRole.Participant,
+      active: true,
     };
     firebaseService.authenticate.mockResolvedValue(mockUser as any);
     mockRequest = {
@@ -89,6 +92,30 @@ describe('AuthMiddleware', () => {
     await middleware.use(mockRequest, mockResponse, nextFn);
 
     expect(nextFn).toHaveBeenCalled();
+  });
+
+  it('should return 403 when user is blocked (active=false)', async () => {
+    const mockUser = {
+      id: 'user-1',
+      email: 'test@test.com',
+      uid: 'firebase-uid',
+      name: 'Test',
+      imageUrl: undefined,
+      role: UserRole.Participant,
+      active: false,
+    };
+    firebaseService.authenticate.mockResolvedValue(mockUser);
+    mockRequest = {
+      cookies: { __auth: 'valid-token' },
+      baseUrl: '/v1/projects',
+      path: '/',
+      method: 'POST',
+    };
+
+    await middleware.use(mockRequest, mockResponse, nextFn);
+
+    expect(mockResponse.status).toHaveBeenCalledWith(HttpStatus.FORBIDDEN);
+    expect(nextFn).not.toHaveBeenCalled();
   });
 
   it('should return 401 when firebase throws', async () => {

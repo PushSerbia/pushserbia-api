@@ -10,6 +10,7 @@ import { ServiceAccount } from 'firebase-admin/lib/app/credential';
 interface ExtendedDecodedIdToken extends DecodedIdToken {
   app_user_id: string;
   app_user_role: UserRole;
+  app_user_active: boolean;
   name: string;
   email: string;
 }
@@ -47,6 +48,7 @@ export class FirebaseAuthService {
         name: decodedToken.name,
         imageUrl: decodedToken.picture,
         role: decodedToken.app_user_role,
+        active: decodedToken.app_user_active !== false,
       };
     } catch (error) {
       this.logger.warn('Firebase token verification failed', error);
@@ -63,13 +65,18 @@ export class FirebaseAuthService {
         this.logger.error('Firebase getUserByEmail error', err);
         throw new UnauthorizedException('Something went wrong');
       }
-      user = await this.getAdmin().auth().createUser({
-        email: data.email,
-        emailVerified: data.email_verified,
-        displayName: data.name,
-        photoURL: data.picture,
-        uid: data.sub,
-      });
+      try {
+        user = await this.getAdmin().auth().createUser({
+          email: data.email,
+          emailVerified: data.email_verified,
+          displayName: data.name,
+          photoURL: data.picture,
+          uid: data.sub,
+        });
+      } catch (createErr) {
+        this.logger.error('Firebase createUser failed', createErr);
+        throw new UnauthorizedException('Something went wrong');
+      }
     }
     try {
       const customToken = await this.getAdmin()

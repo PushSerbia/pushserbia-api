@@ -45,9 +45,7 @@ export class MailchimpService {
       return this.mailchimp;
     }
 
-    const mailchimpRef = require('mailchimp-api-v3');
-
-    this.mailchimp = new mailchimpRef(this.getConfig().token) as Mailchimp;
+    this.mailchimp = new Mailchimp(this.getConfig().token);
 
     return this.mailchimp;
   }

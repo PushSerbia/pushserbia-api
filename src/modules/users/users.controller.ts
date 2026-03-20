@@ -109,7 +109,15 @@ export class UsersController {
   @Post(':id/block')
   @Roles([UserRole.Admin])
   async blockUser(@Param('id', ParseUUIDPipe) id: string) {
-    return this.usersService.update(id, { isBlocked: true });
+    const user = await this.usersService.update(id, { isBlocked: true });
+    if (user?.firebaseUid) {
+      await this.firebaseAuthService.setCustomUserData(user.firebaseUid, {
+        app_user_id: user.id,
+        app_user_role: user.role,
+        app_user_active: false,
+      });
+    }
+    return user;
   }
 
   @Patch(':id')
