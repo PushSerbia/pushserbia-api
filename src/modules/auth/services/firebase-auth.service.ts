@@ -1,4 +1,4 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { Injectable, Logger, UnauthorizedException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import * as firebaseAdmin from 'firebase-admin';
 import { UserRole } from '../../users/enums/user-role';
@@ -16,6 +16,7 @@ interface ExtendedDecodedIdToken extends DecodedIdToken {
 
 @Injectable()
 export class FirebaseAuthService {
+  private readonly logger = new Logger(FirebaseAuthService.name);
   private admin: firebaseAdmin.app.App;
 
   constructor(private configService: ConfigService) {}
@@ -47,7 +48,8 @@ export class FirebaseAuthService {
         imageUrl: decodedToken.picture,
         role: decodedToken.app_user_role,
       };
-    } catch {
+    } catch (error) {
+      this.logger.warn('Firebase token verification failed', error);
       throw new UnauthorizedException('Something went wrong');
     }
   }
@@ -58,6 +60,7 @@ export class FirebaseAuthService {
       user = await this.getAdmin().auth().getUserByEmail(data.email);
     } catch (err: any) {
       if (err?.errorInfo?.code !== 'auth/user-not-found') {
+        this.logger.error('Firebase getUserByEmail error', err);
         throw new UnauthorizedException('Something went wrong');
       }
       user = await this.getAdmin().auth().createUser({
@@ -73,7 +76,8 @@ export class FirebaseAuthService {
         .auth()
         .createCustomToken(user.uid);
       return customToken;
-    } catch {
+    } catch (error) {
+      this.logger.error('Firebase custom token creation failed', error);
       throw new UnauthorizedException('Something went wrong');
     }
   }
@@ -89,7 +93,8 @@ export class FirebaseAuthService {
     try {
       await this.getAdmin().auth().setCustomUserClaims(uid, data);
       return { message: 'success' };
-    } catch {
+    } catch (error) {
+      this.logger.error('Firebase setCustomUserClaims failed', error);
       throw new UnauthorizedException('Something went wrong');
     }
   }

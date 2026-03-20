@@ -1,10 +1,12 @@
 import { AuthController } from './auth.controller';
 import { AuthService } from './services/auth.service';
+import { FirebaseAuthService } from './services/firebase-auth.service';
 import { HttpStatus } from '@nestjs/common';
 
 describe('AuthController', () => {
   let controller: AuthController;
   let authService: jest.Mocked<AuthService>;
+  let firebaseAuthService: jest.Mocked<FirebaseAuthService>;
 
   beforeEach(() => {
     authService = {
@@ -13,7 +15,16 @@ describe('AuthController', () => {
         isSecureCookie: false,
       }),
     } as any;
-    controller = new AuthController(authService);
+    firebaseAuthService = {
+      authenticate: jest.fn().mockResolvedValue({
+        id: 'user-1',
+        email: 'test@test.com',
+        uid: 'firebase-uid',
+        name: 'Test',
+        role: 'participant',
+      }),
+    } as any;
+    controller = new AuthController(authService, firebaseAuthService);
   });
 
   describe('linkedinRedirect', () => {
@@ -35,7 +46,7 @@ describe('AuthController', () => {
   });
 
   describe('setTokenCookie', () => {
-    it('should set cookie when token is provided', () => {
+    it('should set cookie when token is valid', async () => {
       const mockRes = {
         cookie: jest.fn(),
         status: jest.fn().mockReturnThis(),
@@ -43,11 +54,14 @@ describe('AuthController', () => {
       } as any;
       const mockReq = {} as any;
 
-      controller.setTokenCookie(mockReq, mockRes, 'my-token');
+      await controller.setTokenCookie(mockReq, mockRes, 'valid-token');
 
+      expect(firebaseAuthService.authenticate).toHaveBeenCalledWith(
+        'valid-token',
+      );
       expect(mockRes.cookie).toHaveBeenCalledWith(
         '__auth',
-        'my-token',
+        'valid-token',
         expect.objectContaining({
           httpOnly: true,
           sameSite: 'lax',
@@ -56,7 +70,20 @@ describe('AuthController', () => {
       expect(mockRes.status).toHaveBeenCalledWith(HttpStatus.OK);
     });
 
-    it('should clear cookie when token is empty', () => {
+    it('should return 401 when token is invalid', async () => {
+      firebaseAuthService.authenticate.mockRejectedValue(new Error('invalid'));
+      const mockRes = {
+        status: jest.fn().mockReturnThis(),
+        json: jest.fn(),
+      } as any;
+      const mockReq = {} as any;
+
+      await controller.setTokenCookie(mockReq, mockRes, 'bad-token');
+
+      expect(mockRes.status).toHaveBeenCalledWith(HttpStatus.UNAUTHORIZED);
+    });
+
+    it('should clear cookie when token is empty', async () => {
       const mockRes = {
         clearCookie: jest.fn(),
         status: jest.fn().mockReturnThis(),
@@ -64,7 +91,7 @@ describe('AuthController', () => {
       } as any;
       const mockReq = {} as any;
 
-      controller.setTokenCookie(mockReq, mockRes, '');
+      await controller.setTokenCookie(mockReq, mockRes, '');
 
       expect(mockRes.clearCookie).toHaveBeenCalledWith('__auth');
       expect(mockRes.status).toHaveBeenCalledWith(HttpStatus.OK);
