@@ -50,6 +50,25 @@ describe('ValidTokenOnlyMiddleware', () => {
     expect(nextFn).toHaveBeenCalled();
   });
 
+  it('should return 403 when user is blocked', async () => {
+    const mockUser = {
+      id: 'user-1',
+      email: 'test@test.com',
+      uid: 'uid',
+      name: 'Test',
+      imageUrl: undefined,
+      role: UserRole.Participant,
+      active: false,
+    };
+    firebaseService.authenticate.mockResolvedValue(mockUser);
+    const req = { cookies: { __auth: 'valid-token' } } as any;
+
+    await middleware.use(req, mockResponse, nextFn);
+
+    expect(mockResponse.status).toHaveBeenCalledWith(HttpStatus.FORBIDDEN);
+    expect(nextFn).not.toHaveBeenCalled();
+  });
+
   it('should return 401 when authentication fails', async () => {
     firebaseService.authenticate.mockRejectedValue(new Error('bad'));
     const req = { cookies: { __auth: 'bad-token' } } as any;

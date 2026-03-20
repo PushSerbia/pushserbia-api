@@ -2,6 +2,7 @@ import { VotesService } from './votes.service';
 import { Repository } from 'typeorm';
 import { Vote } from './entities/vote.entity';
 import { ConflictException, NotFoundException } from '@nestjs/common';
+import { ProjectStatus } from '../projects/enums/project-status.enum';
 
 describe('VotesService', () => {
   let service: VotesService;
@@ -95,6 +96,23 @@ describe('VotesService', () => {
       );
     });
 
+    it('should throw ConflictException when project is not in voting status', async () => {
+      mockManager.findOne.mockResolvedValueOnce({
+        id: 'user-1',
+        level: 1,
+        isBlocked: false,
+      });
+      mockManager.findOne.mockResolvedValueOnce({
+        id: 'project-1',
+        isBanned: false,
+        status: ProjectStatus.PENDING,
+      });
+
+      await expect(service.voteForProject(params)).rejects.toThrow(
+        ConflictException,
+      );
+    });
+
     it('should create vote and update project/user counters on success', async () => {
       mockManager.findOne.mockResolvedValueOnce({
         id: 'user-1',
@@ -104,6 +122,7 @@ describe('VotesService', () => {
       mockManager.findOne.mockResolvedValueOnce({
         id: 'project-1',
         isBanned: false,
+        status: ProjectStatus.VOTING,
       });
 
       const mockVote = {
@@ -135,6 +154,7 @@ describe('VotesService', () => {
       mockManager.findOne.mockResolvedValueOnce({
         id: 'project-1',
         isBanned: false,
+        status: ProjectStatus.VOTING,
       });
 
       mockManager.create.mockReturnValue({});

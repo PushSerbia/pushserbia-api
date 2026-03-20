@@ -40,10 +40,12 @@ export class CreateProjectDto {
   @Transform(({ value }: { value: string }) => value || undefined)
   @IsOptional()
   @IsUrl()
+  @MaxLength(2048)
   github?: string;
 
   @Transform(({ value }: { value: string }) => value || undefined)
   @IsOptional()
   @IsUrl()
+  @MaxLength(2048)
   image?: string;
 }

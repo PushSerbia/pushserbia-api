@@ -8,6 +8,7 @@ import { RepositoryService } from '../../core/repository/repository.service';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Project } from '../projects/entities/project.entity';
+import { ProjectStatus } from '../projects/enums/project-status.enum';
 import { User } from '../users/entities/user.entity';
 
 @Injectable()
@@ -31,7 +32,7 @@ export class VotesService extends RepositoryService<Vote> {
         }),
         manager.findOne(Project, {
           where: { id: params.projectId },
-          select: ['id', 'isBanned'],
+          select: ['id', 'isBanned', 'status'],
         }),
       ]);
 
@@ -49,6 +50,9 @@ export class VotesService extends RepositoryService<Vote> {
       }
       if (project.isBanned) {
         throw new ConflictException('Cannot vote for a banned project');
+      }
+      if (project.status !== ProjectStatus.VOTING) {
+        throw new ConflictException('Voting is not open for this project');
       }
 
       const vote = manager.create(Vote, {

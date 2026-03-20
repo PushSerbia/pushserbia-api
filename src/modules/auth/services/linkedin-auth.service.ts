@@ -49,6 +49,7 @@ export class LinkedinAuthService {
             'Content-Type': 'application/x-www-form-urlencoded',
           },
           body,
+          signal: AbortSignal.timeout(10_000),
         },
       );
       if (!req.ok) {
@@ -71,6 +72,7 @@ export class LinkedinAuthService {
         headers: {
           Authorization: `Bearer ${accessToken}`,
         },
+        signal: AbortSignal.timeout(10_000),
       });
 
       if (response.ok) {

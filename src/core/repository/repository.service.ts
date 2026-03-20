@@ -74,6 +74,9 @@ export abstract class RepositoryService<T extends { id: string }> {
   }
 
   async remove(criteria: string | FindOptionsWhere<T>): Promise<void> {
-    await this.repository.delete(criteria);
+    const result = await this.repository.delete(criteria);
+    if (result.affected === 0) {
+      throw new HttpException('Entity not found', HttpStatus.NOT_FOUND);
+    }
   }
 }

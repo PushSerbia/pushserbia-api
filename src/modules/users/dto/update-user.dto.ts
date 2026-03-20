@@ -4,6 +4,7 @@ import {
   IsOptional,
   IsString,
   IsUrl,
+  Max,
   MaxLength,
   Min,
 } from 'class-validator';
@@ -29,5 +30,6 @@ export class UpdateUserDto {
   @IsOptional()
   @IsInt()
   @Min(1)
+  @Max(100)
   level?: number;
 }
