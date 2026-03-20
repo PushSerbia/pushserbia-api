@@ -22,14 +22,14 @@ export class Vote {
   @Column({ type: 'uuid' })
   userId: string;
 
-  @ManyToOne(() => User)
+  @ManyToOne(() => User, { onDelete: 'CASCADE' })
   user: User;
 
   @Index()
   @Column({ type: 'uuid' })
   projectId: string;
 
-  @ManyToOne(() => Project)
+  @ManyToOne(() => Project, { onDelete: 'CASCADE' })
   project: Project;
 
   @Column({ type: 'int' })

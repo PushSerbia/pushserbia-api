@@ -3,6 +3,8 @@ import {
   Controller,
   Delete,
   Get,
+  HttpCode,
+  HttpStatus,
   Param,
   ParseUUIDPipe,
   Patch,
@@ -13,6 +15,7 @@ import {
 import { ProjectsService } from './projects.service';
 import { CreateProjectDto } from './dto/create-project.dto';
 import { UpdateProjectDto } from './dto/update-project.dto';
+import { BanProjectDto } from './dto/ban-project.dto';
 import { GetUser } from '../../core/decorators/get-user.decorator';
 import { CurrentUser } from '../auth/entities/current.user.entity';
 import {
@@ -20,6 +23,7 @@ import {
   DEFAULT_PAGE_SIZE,
   MAX_PAGE_SIZE,
 } from '../../core/constants/constants';
+import { PaginationQueryDto } from '../../core/dto/pagination-query.dto';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { UserRole } from '../users/enums/user-role';
 import { RolesGuard } from '../auth/guards/roles.guard';
@@ -52,19 +56,18 @@ export class ProjectsController {
   @Get()
   findAll(
     @Query('slug') slug: string,
-    @Query('page') page?: number,
-    @Query('pageSize') pageSize?: number,
+    @Query() pagination: PaginationQueryDto,
   ) {
     const _pageSize = Math.min(
-      pageSize ? Number(pageSize) : DEFAULT_PAGE_SIZE,
+      pagination.pageSize ?? DEFAULT_PAGE_SIZE,
       MAX_PAGE_SIZE,
     );
     const _page =
-      page && Number(page) > 0 ? Number(page) : DEFAULT_PAGE_NUMBER;
+      pagination.page && pagination.page > 0 ? pagination.page : DEFAULT_PAGE_NUMBER;
     const offset = (_page - 1) * _pageSize;
 
     return this.projectsService.findAllOffset(
-      slug ? { slug } : undefined,
+      slug ? { where: { slug } } : undefined,
       _pageSize,
       offset,
     );
@@ -102,12 +105,13 @@ export class ProjectsController {
   @Roles([UserRole.Admin])
   banProject(
     @Param('id', ParseUUIDPipe) id: string,
-    @Body('banNote') banNote: string,
+    @Body() banProjectDto: BanProjectDto,
   ) {
-    return this.projectsService.update(id, { isBanned: true, banNote });
+    return this.projectsService.update(id, { isBanned: true, banNote: banProjectDto.banNote });
   }
 
   @Delete(':id')
+  @HttpCode(HttpStatus.NO_CONTENT)
   remove(
     @Param('id', ParseUUIDPipe) id: string,
     @GetUser() user: CurrentUser,

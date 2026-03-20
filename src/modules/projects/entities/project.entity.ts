@@ -60,7 +60,7 @@ export class Project {
   @Column({ type: 'uuid' })
   creatorId: string;
 
-  @ManyToOne(() => User)
+  @ManyToOne(() => User, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'creatorId' })
   creator: User;
 

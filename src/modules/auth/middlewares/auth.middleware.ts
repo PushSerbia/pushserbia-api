@@ -18,7 +18,7 @@ export class AuthMiddleware implements NestMiddleware {
 
       const user = await this.firebaseService.authenticate(__auth);
       if (!user.id && req.baseUrl !== '/v1/users/account') {
-        return res.status(HttpStatus.CONFLICT).json({ message: 'invalid id' });
+        return res.status(HttpStatus.BAD_REQUEST).json({ message: 'invalid id' });
       }
 
       if (!user.active) {

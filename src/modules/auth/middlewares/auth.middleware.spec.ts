@@ -51,7 +51,7 @@ describe('AuthMiddleware', () => {
     expect(nextFn).toHaveBeenCalled();
   });
 
-  it('should return CONFLICT when user has no id and path is not /account', async () => {
+  it('should return BAD_REQUEST when user has no id and path is not /account', async () => {
     const mockUser = {
       id: undefined,
       email: 'test@test.com',
@@ -69,7 +69,7 @@ describe('AuthMiddleware', () => {
 
     await middleware.use(mockRequest, mockResponse, nextFn);
 
-    expect(mockResponse.status).toHaveBeenCalledWith(HttpStatus.CONFLICT);
+    expect(mockResponse.status).toHaveBeenCalledWith(HttpStatus.BAD_REQUEST);
     expect(nextFn).not.toHaveBeenCalled();
   });
 

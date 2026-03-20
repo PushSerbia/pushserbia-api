@@ -1,12 +1,14 @@
 import { NestFactory, Reflector } from '@nestjs/core';
 import { AppModule } from './app.module';
-import { ClassSerializerInterceptor, ValidationPipe } from '@nestjs/common';
+import { ClassSerializerInterceptor, Logger, ValidationPipe } from '@nestjs/common';
 import { ExceptionsFilter } from './core/filters/exceptions.filter';
 import cookieParser from 'cookie-parser';
+import helmet from 'helmet';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
+  app.use(helmet());
   app.setGlobalPrefix('v1');
   app.useGlobalPipes(
     new ValidationPipe({
@@ -27,13 +29,24 @@ async function bootstrap() {
       // Support regex entries using either re:/regex/ syntax or plain ^...$ pattern
       if (/^re:/i.test(entry)) {
         const pattern = entry.replace(/^re:/i, '');
-        return new RegExp(pattern);
+        try {
+          return new RegExp(pattern);
+        } catch {
+          Logger.warn(`Invalid CORS regex pattern ignored: ${pattern}`, 'Bootstrap');
+          return null;
+        }
       }
       if (entry.startsWith('^') || entry.endsWith('$')) {
-        return new RegExp(entry);
+        try {
+          return new RegExp(entry);
+        } catch {
+          Logger.warn(`Invalid CORS regex pattern ignored: ${entry}`, 'Bootstrap');
+          return null;
+        }
       }
       return entry;
-    });
+    })
+    .filter((entry): entry is string | RegExp => entry !== null);
   app.enableCors({
     origin: resolvedOrigins,
     preflightContinue: false,
@@ -43,6 +56,7 @@ async function bootstrap() {
   app.useGlobalFilters(new ExceptionsFilter());
   app.useGlobalInterceptors(new ClassSerializerInterceptor(app.get(Reflector)));
 
+  app.enableShutdownHooks();
   await app.listen(process.env.PORT ?? 3000);
 }
 

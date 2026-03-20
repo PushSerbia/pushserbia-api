@@ -3,6 +3,7 @@ import {
   Controller,
   Delete,
   Get,
+  HttpCode,
   HttpException,
   HttpStatus,
   Param,
@@ -27,7 +28,9 @@ import { RolesGuard } from '../auth/guards/roles.guard';
 import {
   DEFAULT_PAGE_NUMBER,
   DEFAULT_PAGE_SIZE,
+  MAX_PAGE_SIZE,
 } from '../../core/constants/constants';
+import { PaginationQueryDto } from '../../core/dto/pagination-query.dto';
 
 @Controller('users')
 @UseGuards(RolesGuard)
@@ -106,7 +109,7 @@ export class UsersController {
     return await this.usersService.update(user.id, payload);
   }
 
-  @Post(':id/block')
+  @Patch(':id/block')
   @Roles([UserRole.Admin])
   async blockUser(@Param('id', ParseUUIDPipe) id: string) {
     const user = await this.usersService.update(id, { isBlocked: true });
@@ -130,6 +133,7 @@ export class UsersController {
   }
 
   @Delete(':id')
+  @HttpCode(HttpStatus.NO_CONTENT)
   @Roles([UserRole.Admin])
   async deleteUser(@Param('id', ParseUUIDPipe) id: string): Promise<void> {
     return this.usersService.remove(id);
@@ -138,12 +142,14 @@ export class UsersController {
   @Get()
   @Roles([UserRole.Admin])
   async getAllUsers(
-    @Query('page') page?: number,
-    @Query('pageSize') pageSize?: number,
+    @Query() pagination: PaginationQueryDto,
   ) {
-    const _pageSize = pageSize ? Number(pageSize) : DEFAULT_PAGE_SIZE;
+    const _pageSize = Math.min(
+      pagination.pageSize ?? DEFAULT_PAGE_SIZE,
+      MAX_PAGE_SIZE,
+    );
     const _page =
-      page && Number(page) > 0 ? Number(page) : DEFAULT_PAGE_NUMBER;
+      pagination.page && pagination.page > 0 ? pagination.page : DEFAULT_PAGE_NUMBER;
     const offset = (_page - 1) * _pageSize;
 
     return this.usersService.findAllOffset(undefined, _pageSize, offset);

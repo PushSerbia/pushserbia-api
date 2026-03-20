@@ -38,7 +38,7 @@ describe('ProjectsService', () => {
     it('should merge additional filter options', async () => {
       mockRepository.find.mockResolvedValue([]);
 
-      await service.findAll({ slug: 'my-project' } as any);
+      await service.findAll({ where: { slug: 'my-project' } } as any);
 
       expect(mockRepository.find).toHaveBeenCalledWith(
         expect.objectContaining({

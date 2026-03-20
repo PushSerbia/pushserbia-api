@@ -1,5 +1,6 @@
 import {
   ConflictException,
+  ForbiddenException,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
@@ -40,7 +41,7 @@ export class VotesService extends RepositoryService<Vote> {
         throw new NotFoundException(`User not found`);
       }
       if (user.isBlocked) {
-        throw new ConflictException('User is blocked');
+        throw new ForbiddenException('User is blocked');
       }
 
       if (!project) {

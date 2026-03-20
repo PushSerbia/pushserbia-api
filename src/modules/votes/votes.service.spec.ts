@@ -1,7 +1,7 @@
 import { VotesService } from './votes.service';
 import { Repository } from 'typeorm';
 import { Vote } from './entities/vote.entity';
-import { ConflictException, NotFoundException } from '@nestjs/common';
+import { ConflictException, ForbiddenException, NotFoundException } from '@nestjs/common';
 import { ProjectStatus } from '../projects/enums/project-status.enum';
 
 describe('VotesService', () => {
@@ -51,7 +51,7 @@ describe('VotesService', () => {
       );
     });
 
-    it('should throw ConflictException when user is blocked', async () => {
+    it('should throw ForbiddenException when user is blocked', async () => {
       mockManager.findOne.mockResolvedValueOnce({
         id: 'user-1',
         level: 1,
@@ -63,7 +63,7 @@ describe('VotesService', () => {
       });
 
       await expect(service.voteForProject(params)).rejects.toThrow(
-        ConflictException,
+        ForbiddenException,
       );
     });
 
