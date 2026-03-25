@@ -3,7 +3,10 @@ import {
   Controller,
   Delete,
   Get,
+  HttpCode,
+  HttpStatus,
   Param,
+  ParseUUIDPipe,
   Patch,
   Post,
   Query,
@@ -12,13 +15,15 @@ import {
 import { ProjectsService } from './projects.service';
 import { CreateProjectDto } from './dto/create-project.dto';
 import { UpdateProjectDto } from './dto/update-project.dto';
+import { BanProjectDto } from './dto/ban-project.dto';
 import { GetUser } from '../../core/decorators/get-user.decorator';
 import { CurrentUser } from '../auth/entities/current.user.entity';
 import {
   DEFAULT_PAGE_NUMBER,
   DEFAULT_PAGE_SIZE,
+  MAX_PAGE_SIZE,
 } from '../../core/constants/constants';
-import { ProjectStatus } from './enums/project-status.enum';
+import { PaginationQueryDto } from '../../core/dto/pagination-query.dto';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { UserRole } from '../users/enums/user-role';
 import { RolesGuard } from '../auth/guards/roles.guard';
@@ -36,7 +41,6 @@ export class ProjectsController {
     const newProjectData = {
       ...createProjectDto,
       creatorId: creator.id,
-      status: ProjectStatus.PENDING,
     };
     const project = await this.projectsService.create(newProjectData);
     return {
@@ -52,28 +56,31 @@ export class ProjectsController {
   @Get()
   findAll(
     @Query('slug') slug: string,
-    @Query('page') page?: number,
-    @Query('pageSize') pageSize?: number,
+    @Query() pagination: PaginationQueryDto,
   ) {
-    const _pageSize = pageSize ? Number(pageSize) : DEFAULT_PAGE_SIZE;
-    const _page = page && Number(page) > 0 ? Number(page) : DEFAULT_PAGE_NUMBER;
+    const _pageSize = Math.min(
+      pagination.pageSize ?? DEFAULT_PAGE_SIZE,
+      MAX_PAGE_SIZE,
+    );
+    const _page =
+      pagination.page && pagination.page > 0 ? pagination.page : DEFAULT_PAGE_NUMBER;
     const offset = (_page - 1) * _pageSize;
 
     return this.projectsService.findAllOffset(
-      slug ? { slug } : undefined,
+      slug ? { where: { slug } } : undefined,
       _pageSize,
       offset,
     );
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
+  findOne(@Param('id', ParseUUIDPipe) id: string) {
     return this.projectsService.findById(id);
   }
 
   @Patch(':id')
   async update(
-    @Param('id') id: string,
+    @Param('id', ParseUUIDPipe) id: string,
     @Body() updateProjectDto: UpdateProjectDto,
     @GetUser() user: CurrentUser,
   ) {
@@ -96,12 +103,19 @@ export class ProjectsController {
   @Patch(':id/ban')
   @UseGuards(RolesGuard)
   @Roles([UserRole.Admin])
-  banProject(@Param('id') id: string, @Body('banNote') banNote: string) {
-    return this.projectsService.update(id, { isBanned: true, banNote });
+  banProject(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() banProjectDto: BanProjectDto,
+  ) {
+    return this.projectsService.update(id, { isBanned: true, banNote: banProjectDto.banNote });
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string, @GetUser() user: CurrentUser) {
+  @HttpCode(HttpStatus.NO_CONTENT)
+  remove(
+    @Param('id', ParseUUIDPipe) id: string,
+    @GetUser() user: CurrentUser,
+  ) {
     const criteria =
       user.role === UserRole.Admin ? { id } : { id, creatorId: user.id };
     return this.projectsService.remove(criteria);

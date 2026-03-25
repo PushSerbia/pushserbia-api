@@ -3,7 +3,7 @@ import { Project } from './entities/project.entity';
 import { DEFAULT_PAGE_SIZE } from '../../core/constants/constants';
 import { RepositoryService } from '../../core/repository/repository.service';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { FindManyOptions, Repository } from 'typeorm';
 
 @Injectable()
 export class ProjectsService extends RepositoryService<Project> {
@@ -14,9 +14,9 @@ export class ProjectsService extends RepositoryService<Project> {
     super();
   }
 
-  async findAll(options?: Partial<Project>): Promise<Project[]> {
+  async findAll(options?: FindManyOptions<Project>): Promise<Project[]> {
     return this.repository.find({
-      where: { ...options, isBanned: false },
+      where: { ...(options?.where as Partial<Project>), isBanned: false },
       order: { createdAt: 'DESC' },
       relations: { creator: true },
       select: {
@@ -38,7 +38,7 @@ export class ProjectsService extends RepositoryService<Project> {
   }
 
   async findAllOffset(
-    options?: Partial<Project>,
+    options?: FindManyOptions<Project>,
     limit: number = DEFAULT_PAGE_SIZE,
     offset: number = 0,
   ): Promise<{
@@ -51,7 +51,7 @@ export class ProjectsService extends RepositoryService<Project> {
   }> {
     return super.findAllOffset(
       {
-        where: { ...options, isBanned: false },
+        where: { ...(options?.where as Partial<Project>), isBanned: false },
         order: { createdAt: 'DESC' },
         relations: { creator: true },
         select: {

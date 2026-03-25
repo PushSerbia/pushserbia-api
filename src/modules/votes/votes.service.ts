@@ -1,5 +1,6 @@
 import {
   ConflictException,
+  ForbiddenException,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
@@ -8,6 +9,7 @@ import { RepositoryService } from '../../core/repository/repository.service';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Project } from '../projects/entities/project.entity';
+import { ProjectStatus } from '../projects/enums/project-status.enum';
 import { User } from '../users/entities/user.entity';
 
 @Injectable()
@@ -31,7 +33,7 @@ export class VotesService extends RepositoryService<Vote> {
         }),
         manager.findOne(Project, {
           where: { id: params.projectId },
-          select: ['id', 'isBanned'],
+          select: ['id', 'isBanned', 'status'],
         }),
       ]);
 
@@ -39,7 +41,7 @@ export class VotesService extends RepositoryService<Vote> {
         throw new NotFoundException(`User not found`);
       }
       if (user.isBlocked) {
-        throw new ConflictException('User is blocked');
+        throw new ForbiddenException('User is blocked');
       }
 
       if (!project) {
@@ -49,6 +51,9 @@ export class VotesService extends RepositoryService<Vote> {
       }
       if (project.isBanned) {
         throw new ConflictException('Cannot vote for a banned project');
+      }
+      if (project.status !== ProjectStatus.VOTING) {
+        throw new ConflictException('Voting is not open for this project');
       }
 
       const vote = manager.create(Vote, {
@@ -64,10 +69,11 @@ export class VotesService extends RepositoryService<Vote> {
           .createQueryBuilder()
           .update(Project)
           .set({
-            totalVotes: () => `totalVotes + ${user.level}`,
-            totalVoters: () => `totalVoters + 1`,
+            totalVotes: () => `"totalVotes" + :weight`,
+            totalVoters: () => `"totalVoters" + 1`,
           })
           .where('id = :id', { id: params.projectId })
+          .setParameters({ weight: user.level })
           .execute();
 
         await manager.increment(

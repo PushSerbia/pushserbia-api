@@ -4,6 +4,8 @@ import {
   IsIn,
   IsNotEmpty,
   IsOptional,
+  IsString,
+  MaxLength,
 } from 'class-validator';
 
 export class SubscribeMailchimpDto {
@@ -18,11 +20,17 @@ export class SubscribeMailchimpDto {
   tags: string;
 
   @IsOptional()
+  @IsString()
+  @MaxLength(200)
   name: string;
 
   @IsOptional()
+  @IsString()
+  @MaxLength(50)
   phone: string;
 
   @IsOptional()
+  @IsString()
+  @MaxLength(1000)
   message: string;
 }

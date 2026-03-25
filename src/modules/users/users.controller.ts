@@ -3,11 +3,14 @@ import {
   Controller,
   Delete,
   Get,
+  HttpCode,
   HttpException,
   HttpStatus,
   Param,
+  ParseUUIDPipe,
   Patch,
   Post,
+  Query,
   SerializeOptions,
   UseGuards,
 } from '@nestjs/common';
@@ -22,6 +25,12 @@ import { UpdateMeDto } from './dto/update-me.dto';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { UserRole } from './enums/user-role';
 import { RolesGuard } from '../auth/guards/roles.guard';
+import {
+  DEFAULT_PAGE_NUMBER,
+  DEFAULT_PAGE_SIZE,
+  MAX_PAGE_SIZE,
+} from '../../core/constants/constants';
+import { PaginationQueryDto } from '../../core/dto/pagination-query.dto';
 
 @Controller('users')
 @UseGuards(RolesGuard)
@@ -33,8 +42,8 @@ export class UsersController {
 
   @Post()
   @Roles([UserRole.Admin])
-  async create(@Body() userData: Partial<User>): Promise<User> {
-    return this.usersService.create(userData);
+  async create(@Body() createUserDto: CreateUserDto): Promise<User> {
+    return this.usersService.create(createUserDto);
   }
 
   @Post('account')
@@ -100,30 +109,49 @@ export class UsersController {
     return await this.usersService.update(user.id, payload);
   }
 
-  @Post(':id/block')
+  @Patch(':id/block')
   @Roles([UserRole.Admin])
-  async blockUser(@Param('id') id: string) {
-    return this.usersService.update(id, { isBlocked: true });
+  async blockUser(@Param('id', ParseUUIDPipe) id: string) {
+    const user = await this.usersService.update(id, { isBlocked: true });
+    if (user?.firebaseUid) {
+      await this.firebaseAuthService.setCustomUserData(user.firebaseUid, {
+        app_user_id: user.id,
+        app_user_role: user.role,
+        app_user_active: false,
+      });
+    }
+    return user;
   }
 
   @Patch(':id')
   @Roles([UserRole.Admin])
   async updateUser(
-    @Param('id') id: string,
+    @Param('id', ParseUUIDPipe) id: string,
     @Body() updateUserDto: UpdateUserDto,
   ) {
     return this.usersService.update(id, updateUserDto);
   }
 
   @Delete(':id')
+  @HttpCode(HttpStatus.NO_CONTENT)
   @Roles([UserRole.Admin])
-  async deleteUser(@Param('id') id: string): Promise<void> {
+  async deleteUser(@Param('id', ParseUUIDPipe) id: string): Promise<void> {
     return this.usersService.remove(id);
   }
 
   @Get()
   @Roles([UserRole.Admin])
-  async getAllUsers(): Promise<User[]> {
-    return this.usersService.findAll();
+  async getAllUsers(
+    @Query() pagination: PaginationQueryDto,
+  ) {
+    const _pageSize = Math.min(
+      pagination.pageSize ?? DEFAULT_PAGE_SIZE,
+      MAX_PAGE_SIZE,
+    );
+    const _page =
+      pagination.page && pagination.page > 0 ? pagination.page : DEFAULT_PAGE_NUMBER;
+    const offset = (_page - 1) * _pageSize;
+
+    return this.usersService.findAllOffset(undefined, _pageSize, offset);
   }
 }

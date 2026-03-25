@@ -1,4 +1,13 @@
-import { IsEmail, IsNumber, IsOptional, IsString } from 'class-validator';
+import {
+  IsEmail,
+  IsInt,
+  IsOptional,
+  IsString,
+  IsUrl,
+  Max,
+  MaxLength,
+  Min,
+} from 'class-validator';
 
 export class UpdateUserDto {
   @IsOptional()
@@ -7,17 +16,20 @@ export class UpdateUserDto {
 
   @IsOptional()
   @IsString()
+  @MaxLength(200)
   fullName?: string;
 
   @IsOptional()
-  @IsString()
+  @IsUrl()
   linkedInUrl?: string;
 
   @IsOptional()
-  @IsString()
+  @IsUrl()
   gitHubUrl?: string;
 
   @IsOptional()
-  @IsNumber()
+  @IsInt()
+  @Min(1)
+  @Max(100)
   level?: number;
 }

@@ -1,4 +1,4 @@
-import { DeepPartial, FindOptionsWhere, Repository } from 'typeorm';
+import { DeepPartial, FindManyOptions, FindOptionsWhere, Repository } from 'typeorm';
 import { QueryDeepPartialEntity } from 'typeorm/query-builder/QueryPartialEntity';
 import { BadRequestException, HttpException, HttpStatus } from '@nestjs/common';
 import { DEFAULT_PAGE_SIZE } from '../constants/constants';
@@ -10,12 +10,12 @@ export abstract class RepositoryService<T extends { id: string }> {
     return this.repository.save(entity);
   }
 
-  async findAll(options?: any): Promise<T[]> {
+  async findAll(options?: FindManyOptions<T>): Promise<T[]> {
     return this.repository.find(options);
   }
 
   async findAllOffset(
-    options?: any,
+    options?: FindManyOptions<T>,
     limit: number = DEFAULT_PAGE_SIZE,
     offset: number = 0,
   ): Promise<{
@@ -74,6 +74,9 @@ export abstract class RepositoryService<T extends { id: string }> {
   }
 
   async remove(criteria: string | FindOptionsWhere<T>): Promise<void> {
-    await this.repository.delete(criteria);
+    const result = await this.repository.delete(criteria);
+    if (result.affected === 0) {
+      throw new HttpException('Entity not found', HttpStatus.NOT_FOUND);
+    }
   }
 }

@@ -1,4 +1,4 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { Injectable, Logger, UnauthorizedException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import * as firebaseAdmin from 'firebase-admin';
 import { UserRole } from '../../users/enums/user-role';
@@ -10,12 +10,14 @@ import { ServiceAccount } from 'firebase-admin/lib/app/credential';
 interface ExtendedDecodedIdToken extends DecodedIdToken {
   app_user_id: string;
   app_user_role: UserRole;
+  app_user_active: boolean;
   name: string;
   email: string;
 }
 
 @Injectable()
 export class FirebaseAuthService {
+  private readonly logger = new Logger(FirebaseAuthService.name);
   private admin: firebaseAdmin.app.App;
 
   constructor(private configService: ConfigService) {}
@@ -46,8 +48,10 @@ export class FirebaseAuthService {
         name: decodedToken.name,
         imageUrl: decodedToken.picture,
         role: decodedToken.app_user_role,
+        active: decodedToken.app_user_active !== false,
       };
-    } catch {
+    } catch (error) {
+      this.logger.warn('Firebase token verification failed', error);
       throw new UnauthorizedException('Something went wrong');
     }
   }
@@ -56,24 +60,31 @@ export class FirebaseAuthService {
     let user: UserRecord;
     try {
       user = await this.getAdmin().auth().getUserByEmail(data.email);
-    } catch (err) {
-      if (err.errorInfo.code !== 'auth/user-not-found') {
+    } catch (err: any) {
+      if (err?.errorInfo?.code !== 'auth/user-not-found') {
+        this.logger.error('Firebase getUserByEmail error', err);
         throw new UnauthorizedException('Something went wrong');
       }
-      user = await this.getAdmin().auth().createUser({
-        email: data.email,
-        emailVerified: data.email_verified,
-        displayName: data.name,
-        photoURL: data.picture,
-        uid: data.sub,
-      });
+      try {
+        user = await this.getAdmin().auth().createUser({
+          email: data.email,
+          emailVerified: data.email_verified,
+          displayName: data.name,
+          photoURL: data.picture,
+          uid: data.sub,
+        });
+      } catch (createErr) {
+        this.logger.error('Firebase createUser failed', createErr);
+        throw new UnauthorizedException('Something went wrong');
+      }
     }
     try {
       const customToken = await this.getAdmin()
         .auth()
         .createCustomToken(user.uid);
       return customToken;
-    } catch {
+    } catch (error) {
+      this.logger.error('Firebase custom token creation failed', error);
       throw new UnauthorizedException('Something went wrong');
     }
   }
@@ -89,7 +100,8 @@ export class FirebaseAuthService {
     try {
       await this.getAdmin().auth().setCustomUserClaims(uid, data);
       return { message: 'success' };
-    } catch {
+    } catch (error) {
+      this.logger.error('Firebase setCustomUserClaims failed', error);
       throw new UnauthorizedException('Something went wrong');
     }
   }

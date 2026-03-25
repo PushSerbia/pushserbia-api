@@ -15,7 +15,14 @@ export class ValidTokenOnlyMiddleware implements NestMiddleware {
           .json({ message: 'invalid token' });
       }
 
-      req['user'] = await this.firebaseService.authenticate(__auth);
+      const user = await this.firebaseService.authenticate(__auth);
+      if (!user.active) {
+        return res
+          .status(HttpStatus.FORBIDDEN)
+          .json({ message: 'account is blocked' });
+      }
+
+      req['user'] = user;
 
       next();
     } catch {

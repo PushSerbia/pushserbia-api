@@ -7,4 +7,5 @@ export interface CurrentUser {
   name: string;
   imageUrl: string | undefined;
   role: UserRole;
+  active: boolean;
 }

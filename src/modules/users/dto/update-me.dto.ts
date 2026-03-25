@@ -1,15 +1,16 @@
-import { IsOptional, IsString } from 'class-validator';
+import { IsOptional, IsString, IsUrl, MaxLength } from 'class-validator';
 
 export class UpdateMeDto {
   @IsOptional()
   @IsString()
+  @MaxLength(200)
   fullName?: string;
 
   @IsOptional()
-  @IsString()
+  @IsUrl()
   linkedInUrl?: string;
 
   @IsOptional()
-  @IsString()
+  @IsUrl()
   gitHubUrl?: string;
 }
