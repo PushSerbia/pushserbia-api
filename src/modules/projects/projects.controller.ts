@@ -30,6 +30,7 @@ import { RolesGuard } from '../auth/guards/roles.guard';
 import { generateGravatar } from '../../core/utils/generate-gravatar';
 
 @Controller('projects')
+@UseGuards(RolesGuard)
 export class ProjectsController {
   constructor(private readonly projectsService: ProjectsService) {}
 
@@ -101,7 +102,6 @@ export class ProjectsController {
   }
 
   @Patch(':id/ban')
-  @UseGuards(RolesGuard)
   @Roles([UserRole.Admin])
   banProject(
     @Param('id', ParseUUIDPipe) id: string,
