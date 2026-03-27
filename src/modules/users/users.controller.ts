@@ -51,7 +51,10 @@ export class UsersController {
     @Body() createUserDto: CreateUserDto,
     @GetUser() user: CurrentUser,
   ) {
-    if (user.email && user.email !== createUserDto.email) {
+    if (!user.email) {
+      throw new HttpException('Token missing email claim', HttpStatus.UNAUTHORIZED);
+    }
+    if (user.email !== createUserDto.email) {
       throw new HttpException('Email does not match', HttpStatus.CONFLICT);
     }
 

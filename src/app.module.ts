@@ -65,6 +65,7 @@ export class AppModule implements NestModule {
         { path: '/integrations/subscribe', method: RequestMethod.POST },
         { path: '/auth/redirect/linkedin', method: RequestMethod.GET },
         { path: '/projects', method: RequestMethod.GET },
+        { path: '/projects/(.*)', method: RequestMethod.GET },
         ...customRoutes,
       )
       .forRoutes('*');

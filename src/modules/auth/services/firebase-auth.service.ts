@@ -47,7 +47,9 @@ export class FirebaseAuthService {
         uid: decodedToken.uid,
         name: decodedToken.name,
         imageUrl: decodedToken.picture,
-        role: decodedToken.app_user_role,
+        role: decodedToken.app_user_role || UserRole.Participant,
+        // Intentionally using !== false so new users without claims default to active.
+        // Blocking is an explicit admin action (app_user_active is set to false).
         active: decodedToken.app_user_active !== false,
       };
     } catch (error) {
