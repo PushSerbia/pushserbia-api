@@ -19,6 +19,7 @@ import firebaseConfig from './core/config/firebase.config';
 import { AuthMiddleware } from './modules/auth/middlewares/auth.middleware';
 import { ValidTokenOnlyMiddleware } from './modules/auth/middlewares/valid-token-only/valid-token-only.middleware';
 import authConfig from './core/config/auth.config';
+import { UnsplashModule } from './modules/unsplash/unsplash.module';
 
 @Module({
   imports: [
@@ -29,15 +30,22 @@ import authConfig from './core/config/auth.config';
     TypeOrmModule.forRoot({
       type: 'postgres',
       url: process.env.DATABASE_URL,
-      ssl: { rejectUnauthorized: false },
+      ssl:
+        process.env.DATABASE_SSL === 'true'
+          ? {
+              rejectUnauthorized: !!process.env.DATABASE_CA_CERT,
+              ca: process.env.DATABASE_CA_CERT || undefined,
+            }
+          : false,
       autoLoadEntities: true,
-      synchronize: true,
+      synchronize: process.env.TYPEORM_SYNCHRONIZE === 'true',
     }),
     MailchimpModule,
     AuthModule,
     UsersModule,
     ProjectsModule,
     VotesModule,
+    UnsplashModule,
   ],
   controllers: [AppController],
   providers: [AppService],
@@ -53,9 +61,11 @@ export class AppModule implements NestModule {
       .apply(AuthMiddleware)
       .exclude(
         { path: '', method: RequestMethod.ALL },
+        { path: '/auth/set-token-to-cookie', method: RequestMethod.ALL },
         { path: '/integrations/subscribe', method: RequestMethod.POST },
         { path: '/auth/redirect/linkedin', method: RequestMethod.GET },
         { path: '/projects', method: RequestMethod.GET },
+        { path: '/projects/(.*)', method: RequestMethod.GET },
         ...customRoutes,
       )
       .forRoutes('*');

@@ -2,6 +2,7 @@ import {
   Column,
   CreateDateColumn,
   Entity,
+  Index,
   JoinColumn,
   ManyToOne,
   PrimaryGeneratedColumn,
@@ -27,6 +28,7 @@ export class Project {
   @Column({ type: 'text' })
   description: string;
 
+  @Index()
   @Column({
     type: 'enum',
     enum: ProjectStatus,
@@ -34,22 +36,35 @@ export class Project {
   })
   status: ProjectStatus;
 
+  @Index()
   @Column({ type: 'int', default: 0 })
-  voteCounter: number;
+  totalVotes: number;
+
+  @Column({ type: 'int', default: 0 })
+  totalVoters: number;
 
   @Column({ nullable: true })
   github: string;
 
+  @Column({ nullable: true })
+  image: string;
+
+  @Index()
   @Column({ default: false })
   isBanned: boolean;
 
   @Column({ nullable: true })
   banNote: string;
 
-  @ManyToOne(() => User)
+  @Index()
+  @Column({ type: 'uuid' })
+  creatorId: string;
+
+  @ManyToOne(() => User, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'creatorId' })
   creator: User;
 
+  @Index()
   @CreateDateColumn()
   createdAt: Date;
 
