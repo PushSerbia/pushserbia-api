@@ -13,6 +13,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { UsersModule } from './modules/users/users.module';
 import { ProjectsModule } from './modules/projects/projects.module';
 import { VotesModule } from './modules/votes/votes.module';
+import { ProjectMembersModule } from './modules/project-members/project-members.module';
 import { AuthModule } from './modules/auth/auth.module';
 import linkedinConfig from './core/config/linkedin.config';
 import firebaseConfig from './core/config/firebase.config';
@@ -45,6 +46,7 @@ import { UnsplashModule } from './modules/unsplash/unsplash.module';
     UsersModule,
     ProjectsModule,
     VotesModule,
+    ProjectMembersModule,
     UnsplashModule,
   ],
   controllers: [AppController],
@@ -66,6 +68,7 @@ export class AppModule implements NestModule {
         { path: '/auth/redirect/linkedin', method: RequestMethod.GET },
         { path: '/projects', method: RequestMethod.GET },
         { path: '/projects/(.*)', method: RequestMethod.GET },
+        { path: '/projects/:projectId/members', method: RequestMethod.GET },
         ...customRoutes,
       )
       .forRoutes('*');
