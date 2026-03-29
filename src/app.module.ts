@@ -40,6 +40,8 @@ import { UnsplashModule } from './modules/unsplash/unsplash.module';
           : false,
       autoLoadEntities: true,
       synchronize: process.env.TYPEORM_SYNCHRONIZE === 'true',
+      migrationsRun: process.env.TYPEORM_MIGRATIONS_RUN === 'true',
+      migrations: ['dist/database/migrations/*{.ts,.js}'],
     }),
     MailchimpModule,
     AuthModule,
