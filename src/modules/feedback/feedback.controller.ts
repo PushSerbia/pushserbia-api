@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Post, Query } from '@nestjs/common';
+import { Body, Controller, Get, Post, Query, UseGuards } from '@nestjs/common';
 import { FeedbackService } from './feedback.service';
 import { GetUser } from '../../core/decorators/get-user.decorator';
 import { CreateFeedbackDto } from './dto/create-feedback.dto';
@@ -9,8 +9,10 @@ import {
   DEFAULT_PAGE_SIZE,
   MAX_PAGE_SIZE,
 } from '../../core/constants/constants';
+import { RolesGuard } from '../auth/guards/roles.guard';
 
 @Controller('feedback')
+@UseGuards(RolesGuard)
 export class FeedbackController {
   constructor(private readonly feedbackService: FeedbackService) {}
 
