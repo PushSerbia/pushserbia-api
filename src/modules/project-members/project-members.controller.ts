@@ -41,6 +41,7 @@ export class ProjectMembersController {
   }
 
   @Post()
+  @HttpCode(HttpStatus.CREATED)
   addMember(
     @Param('projectId', ParseUUIDPipe) projectId: string,
     @Body() dto: AddProjectMemberDto,

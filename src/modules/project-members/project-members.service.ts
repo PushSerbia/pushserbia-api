@@ -29,71 +29,67 @@ export class ProjectMembersService {
     currentUserId: string;
     currentUserRole: UserRole;
   }): Promise<ProjectMember> {
-    const project = await this.projectRepository.findOne({
-      where: { id: params.projectId },
-      select: ['id', 'creatorId', 'isBanned'],
-    });
+    return this.repository.manager.transaction(async (manager) => {
+      const [project, user] = await Promise.all([
+        manager.findOne(Project, {
+          where: { id: params.projectId },
+          select: ['id', 'creatorId', 'isBanned'],
+        }),
+        manager.findOne(User, {
+          where: { id: params.userId },
+          select: ['id', 'fullName', 'imageUrl', 'gravatar'],
+        }),
+      ]);
 
-    if (!project) {
-      throw new NotFoundException('Project not found');
-    }
-    if (project.isBanned) {
-      throw new ConflictException('Cannot add members to a banned project');
-    }
+      if (!project) {
+        throw new NotFoundException('Project not found');
+      }
+      if (project.isBanned) {
+        throw new ConflictException('Cannot add members to a banned project');
+      }
 
-    // Only project creator or admin can assign members
-    if (
-      params.currentUserRole !== UserRole.Admin &&
-      project.creatorId !== params.currentUserId
-    ) {
-      throw new ForbiddenException(
-        'Only the project owner or admin can assign members',
-      );
-    }
-
-    // Verify the user has voted for the project
-    const vote = await this.voteRepository.findOne({
-      where: { userId: params.userId, projectId: params.projectId },
-      select: ['id'],
-    });
-
-    if (!vote) {
-      throw new ConflictException(
-        'Only users who have voted for this project can be added as members',
-      );
-    }
-
-    try {
-      const member = this.repository.create({
-        userId: params.userId,
-        projectId: params.projectId,
-      });
-      const saved = await this.repository.save(member);
-
-      // Return with user relation for the frontend
-      return this.repository.findOne({
-        where: { id: saved.id },
-        relations: { user: true },
-        select: {
-          id: true,
-          userId: true,
-          assignedAt: true,
-          user: {
-            id: true,
-            fullName: true,
-            imageUrl: true,
-            gravatar: true,
-          },
-        },
-      });
-    } catch (error) {
-      if (error.code === '23505') {
-        throw new ConflictException(
-          'User is already a member of this project',
+      if (
+        params.currentUserRole !== UserRole.Admin &&
+        project.creatorId !== params.currentUserId
+      ) {
+        throw new ForbiddenException(
+          'Only the project owner or admin can assign members',
         );
       }
-      throw error;
-    }
+
+      if (!user) {
+        throw new NotFoundException('User not found');
+      }
+
+      const vote = await manager.findOne(Vote, {
+        where: { userId: params.userId, projectId: params.projectId },
+        select: ['id'],
+      });
+
+      if (!vote) {
+        throw new ConflictException(
+          'Only users who have voted for this project can be added as members',
+        );
+      }
+
+      try {
+        const member = manager.create(ProjectMember, {
+          userId: params.userId,
+          projectId: params.projectId,
+        });
+        const saved = await manager.save(member);
+
+        saved.user = user;
+        return saved;
+      } catch (error) {
+        if (error.code === '23505') {
+          throw new ConflictException(
+            'User is already a member of this project',
+          );
+        }
+        throw error;
+      }
+    });
   }
 
   async getMembers(projectId: string): Promise<ProjectMember[]> {
@@ -129,7 +125,6 @@ export class ProjectMembersService {
       throw new NotFoundException('Project not found');
     }
 
-    // Only project creator or admin can see voters list
     if (
       params.currentUserRole !== UserRole.Admin &&
       project.creatorId !== params.currentUserId
@@ -139,12 +134,11 @@ export class ProjectMembersService {
       );
     }
 
-    // Get voters who are NOT already members
     const votes = await this.voteRepository
       .createQueryBuilder('vote')
       .innerJoinAndSelect('vote.user', 'user')
       .leftJoin(
-        'project_member',
+        ProjectMember,
         'pm',
         'pm."userId" = vote."userId" AND pm."projectId" = vote."projectId"',
       )
