@@ -21,6 +21,7 @@ import { AuthMiddleware } from './modules/auth/middlewares/auth.middleware';
 import { ValidTokenOnlyMiddleware } from './modules/auth/middlewares/valid-token-only/valid-token-only.middleware';
 import authConfig from './core/config/auth.config';
 import { UnsplashModule } from './modules/unsplash/unsplash.module';
+import { FeedbackModule } from './modules/feedback/feedback.module';
 
 const typeormSynchronize = process.env.TYPEORM_SYNCHRONIZE === 'true';
 const typeormMigrationsRun = process.env.TYPEORM_MIGRATIONS_RUN === 'true';
@@ -60,6 +61,7 @@ if (typeormSynchronize && typeormMigrationsRun) {
     VotesModule,
     ProjectMembersModule,
     UnsplashModule,
+    FeedbackModule,
   ],
   controllers: [AppController],
   providers: [AppService],
