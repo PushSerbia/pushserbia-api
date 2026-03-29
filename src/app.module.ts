@@ -22,6 +22,16 @@ import { ValidTokenOnlyMiddleware } from './modules/auth/middlewares/valid-token
 import authConfig from './core/config/auth.config';
 import { UnsplashModule } from './modules/unsplash/unsplash.module';
 
+const typeormSynchronize = process.env.TYPEORM_SYNCHRONIZE === 'true';
+const typeormMigrationsRun = process.env.TYPEORM_MIGRATIONS_RUN === 'true';
+
+if (typeormSynchronize && typeormMigrationsRun) {
+  throw new Error(
+    'TYPEORM_SYNCHRONIZE and TYPEORM_MIGRATIONS_RUN cannot both be true. ' +
+      'Use synchronize for development, migrationsRun for production.',
+  );
+}
+
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -39,8 +49,8 @@ import { UnsplashModule } from './modules/unsplash/unsplash.module';
             }
           : false,
       autoLoadEntities: true,
-      synchronize: process.env.TYPEORM_SYNCHRONIZE === 'true',
-      migrationsRun: process.env.TYPEORM_MIGRATIONS_RUN === 'true',
+      synchronize: typeormSynchronize,
+      migrationsRun: typeormMigrationsRun,
       migrations: ['dist/database/migrations/*{.ts,.js}'],
     }),
     MailchimpModule,
